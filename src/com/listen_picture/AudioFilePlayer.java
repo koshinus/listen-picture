@@ -16,37 +16,30 @@ import static javax.sound.sampled.AudioFormat.Encoding.PCM_SIGNED;
 
 public class AudioFilePlayer {
 
-    public static void main(String[] args) {
-        final AudioFilePlayer player = new AudioFilePlayer ();
-        player.play("samples/Help.mp3");
-    }
-
+    // проигрывание аудиофайла по пути к нему
     public void play(String filePath) {
         final File file = new File(filePath);
 
         try (final AudioInputStream in = getAudioInputStream(file)) {
-
-            System.out.println(in.getFormat());
-
-            final AudioFormat outFormat = getOutFormat(in.getFormat());
-            final Info info = new Info(SourceDataLine.class, outFormat);
-
-            try (final SourceDataLine line =
-                         (SourceDataLine) AudioSystem.getLine(info)) {
-
-                if (line != null) {
-                    line.open(outFormat);
-                    line.start();
-                    stream(getAudioInputStream(outFormat, in), line);
-                    line.drain();
-                    line.stop();
-                }
-            }
-
-        } catch (UnsupportedAudioFileException
-                | LineUnavailableException
-                | IOException e) {
+            playAudioInputStream(in);
+        } catch (UnsupportedAudioFileException | LineUnavailableException | IOException e) {
             throw new IllegalStateException(e);
+        }
+    }
+
+    // проигрывание AudioInputStream
+    public void playAudioInputStream(AudioInputStream stream) throws LineUnavailableException, IOException {
+        final AudioFormat outFormat = getOutFormat(stream.getFormat());
+        final Info info = new Info(SourceDataLine.class, outFormat);
+
+        try (final SourceDataLine line = (SourceDataLine) AudioSystem.getLine(info)) {
+            if (line != null) {
+                line.open(outFormat);
+                line.start();
+                stream(getAudioInputStream(outFormat, stream), line);
+                line.drain();
+                line.stop();
+            }
         }
     }
 
@@ -56,8 +49,7 @@ public class AudioFilePlayer {
         return new AudioFormat(PCM_SIGNED, rate, 16, ch, ch * 2, rate, false);
     }
 
-    private void stream(AudioInputStream in, SourceDataLine line)
-            throws IOException {
+    private void stream(AudioInputStream in, SourceDataLine line) throws IOException {
         final byte[] buffer = new byte[65536];
         for (int n = 0; n != -1; n = in.read(buffer, 0, buffer.length)) {
             line.write(buffer, 0, n);
