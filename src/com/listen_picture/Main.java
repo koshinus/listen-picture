@@ -115,7 +115,9 @@ public class Main {
             int x = 0;
             int y = 0;
 
+            int nSum = 0;
             for (int n = 0; n != -1; n = in.read(buffer, 0, buffer.length)) {
+                nSum += n;
                 Color color = new Color(buffer[0] + byteShift, buffer[1] + byteShift, buffer[2] + byteShift);
                 graphics.setColor(color);
                 drawPoint(graphics, x, y);
@@ -127,7 +129,7 @@ public class Main {
                 }
             }
 
-            ImageIO.write(bufferedImage, "png", new File("saved.png"));
+            ImageIO.write(bufferedImage, "png", new File("saved." + nSum + ".png"));
 
         } catch (UnsupportedAudioFileException | IOException e) {
             throw new IllegalStateException(e);
@@ -135,43 +137,62 @@ public class Main {
     }
 
     // проигрывание картинки, сгенерированной с помощью функции encode
-    //   еще не работает
     public static void decode(String path) throws IOException {
         final File file = new File(path);
+        String[] split = path.split("\\.", -1);
+        int length = Integer.parseInt(split[split.length - 2]);
 
-        BufferedImage in = null;
+        BufferedImage image = null;
         try {
-            in = ImageIO.read(file);
+            image = ImageIO.read(file);
         } catch (IOException e) {
             e.printStackTrace();
         }
 
-        BufferedImage image = new BufferedImage(in.getWidth(), in.getHeight(), BufferedImage.TYPE_INT_ARGB);
+        ByteArrayOutputStream baos = new ByteArrayOutputStream();
+        byte[] bytes1 = baos.toByteArray();
+        System.out.println(bytes1.length);
 
-        PipedInputStream pipedIn = new PipedInputStream();
-        final PipedOutputStream out = new PipedOutputStream(pipedIn);
-
-        new Thread(() -> {
+        int readLength = 0;
             try {
                 for (int y = 0; y < image.getHeight(); ++y) {
                     for (int x = 0; x < image.getWidth(); ++x) {
                         Color color = new Color(image.getRGB(x, y));
-                        out.write(new byte[]{
-                                (byte) (color.getRed() - byteShift),
-                                (byte) (color.getGreen() - byteShift),
-                                (byte) (color.getBlue() - byteShift)
-                        });
+                        readLength += 3;
+                        if (readLength <= length) {
+                            baos.write(new byte[]{
+                                    (byte) (color.getRed() - byteShift),
+                                    (byte) (color.getGreen() - byteShift),
+                                    (byte) (color.getBlue() - byteShift)
+                            });
+                        } else if (readLength - 1 == length) {
+                            baos.write(new byte[]{
+                                    (byte) (color.getRed() - byteShift),
+                                    (byte) (color.getGreen() - byteShift),
+                            });
+                            break;
+                        } else if (readLength - 2 == length) {
+                            baos.write(new byte[]{
+                                    (byte) (color.getRed() - byteShift),
+                            });
+                            break;
+                        } else {
+                            break;
+                        }
                     }
+                    if (readLength > length) break;
                 }
 
             } catch (IOException e) {
             }
-        }).start();
 
 
-        AudioInputStream aaa = null;
+        byte[] bytes = baos.toByteArray();
+        ByteArrayInputStream decodedInputStream = new ByteArrayInputStream(bytes);
+
+        AudioInputStream audioInputStream = null;
         try {
-            aaa = getAudioInputStream(pipedIn);
+            audioInputStream = getAudioInputStream(decodedInputStream);
         } catch (UnsupportedAudioFileException | IOException e) {
             e.printStackTrace();
         }
@@ -179,7 +200,7 @@ public class Main {
         AudioFilePlayer player = new AudioFilePlayer();
         try {
             System.out.println("play start");
-            player.playAudioInputStream(aaa);
+            player.playAudioInputStream(audioInputStream);
         } catch (LineUnavailableException | IOException e) {
             e.printStackTrace();
         }
