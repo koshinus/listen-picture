@@ -1,0 +1,5 @@
+package com.listen_picture;
+
+public class Config {
+    static String CLIENT_SECRET = ;
+}

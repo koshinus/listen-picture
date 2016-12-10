@@ -1,3 +1,6 @@
 /.idea/workspace.xml
 /samples
 /out
+/dependencies
+/src/com/listen_picture/Config.java
+/.gradle

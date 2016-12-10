@@ -1,20 +1,34 @@
 package com.listen_picture;
 
+import com.vk.api.sdk.client.Lang;
+import com.vk.api.sdk.client.TransportClient;
+import com.vk.api.sdk.client.VkApiClient;
+import com.vk.api.sdk.client.actors.ServiceActor;
+import com.vk.api.sdk.client.actors.UserActor;
+import com.vk.api.sdk.exceptions.ApiException;
+import com.vk.api.sdk.exceptions.ClientException;
+import com.vk.api.sdk.httpclient.HttpTransportClient;
+import com.vk.api.sdk.objects.ServiceClientCredentialsFlowResponse;
+import com.vk.api.sdk.objects.UserAuthResponse;
+import com.vk.api.sdk.queries.users.UserField;
 import org.apache.commons.cli.*;
 
 import javax.imageio.ImageIO;
 import javax.sound.midi.*;
 import javax.sound.sampled.*;
 import javax.swing.*;
-import java.awt.*;
+import java.awt.Graphics;
+import java.awt.Color;
 import java.awt.image.BufferedImage;
 import java.io.*;
+import java.util.List;
 
-import static javax.sound.sampled.AudioFormat.Encoding.PCM_SIGNED;
+import static com.sun.org.apache.xalan.internal.xsltc.compiler.Constants.REDIRECT_URI;
 import static javax.sound.sampled.AudioSystem.getAudioInputStream;
 
-
 public class Main {
+    static final java.lang.Integer APP_ID = 5770405;
+    public static String vkCode;
 
     public static void drawPoint(Graphics graphics, int x, int y) {
         graphics.drawLine(x, y, x, y);
@@ -48,8 +62,50 @@ public class Main {
                     e.printStackTrace();
                 }
                 break;
+            case "vk-test": {
+                vkTest();
+            }
         }
 
+    }
+
+
+    static void vkTest() {
+
+
+        Gui.main(new String[] {});
+
+        System.out.println(Main.vkCode);
+
+        TransportClient transportClient = HttpTransportClient.getInstance();
+        VkApiClient vk = new VkApiClient(transportClient);
+
+//        HttpGet get = new HttpGet("http://vk.com/login.php?email=%s&pass=%s");
+
+        UserAuthResponse authResponse = null;
+        try {
+            authResponse = vk.oauth()
+                    .userAuthorizationCodeFlow(APP_ID, Config.CLIENT_SECRET, "https://oauth.vk.com/blank.html", vkCode)
+                    .execute();
+        } catch (ApiException | ClientException e) {
+            e.printStackTrace();
+        }
+
+        UserActor actor = new UserActor(authResponse.getUserId(), authResponse.getAccessToken());
+
+
+        try {
+            List audios = vk.audio().get(actor).count(10).execute().getItems();
+            System.out.println();
+
+//            java.util.List users = vk.users().get(actor)
+//                    .fields(UserField.VERIFIED, UserField.SEX, UserField.SCREEN_NAME)
+//                    .lang(Lang.RU)
+//                    .execute();
+
+        } catch (ApiException | ClientException e) {
+            e.printStackTrace();
+        }
     }
 
     // проигрывание картинки, т.е. генерация музыки по картинке

@@ -1,5 +1,13 @@
 ## Listen Picture
 
+### Install
+```
+gradle getDeps
+cp src/com/listen_picture/Config.java.example src/com/listen_picture/Config.java
+```
+
+Нужно заполнить CLIENT_SECRET в Config классе
+
 ### Usage:
 ```
 <bin> -m <mode> <file_path>
