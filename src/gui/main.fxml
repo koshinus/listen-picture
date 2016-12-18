@@ -8,7 +8,7 @@
 <?import javafx.scene.layout.GridPane?>
 <?import javafx.scene.layout.RowConstraints?>
 
-<GridPane alignment="center" hgap="10" minWidth="200.0" prefHeight="397.0" prefWidth="247.0" vgap="10" xmlns="http://javafx.com/javafx/8.0.111" xmlns:fx="http://javafx.com/fxml/1" fx:controller="gui.MainController">
+<GridPane alignment="center" hgap="10" minWidth="200.0" prefHeight="399.0" prefWidth="463.0" vgap="10" xmlns="http://javafx.com/javafx/8.0.111" xmlns:fx="http://javafx.com/fxml/1" fx:controller="gui.MainController">
     <columnConstraints>
       <ColumnConstraints />
       <ColumnConstraints />
@@ -33,11 +33,21 @@
       <RowConstraints />
       <RowConstraints />
       <RowConstraints />
+      <RowConstraints />
+      <RowConstraints />
+      <RowConstraints />
     </rowConstraints>
    <children>
       <Button fx:id="runButton" mnemonicParsing="false" prefHeight="27.0" prefWidth="115.0" text="Run" GridPane.columnIndex="1" GridPane.rowIndex="1" />
       <Label fx:id="statusLabel" minWidth="58.0" prefHeight="17.0" prefWidth="209.0" text="Status" GridPane.columnIndex="1" GridPane.rowIndex="2" />
-      <ListView fx:id="peopleView" prefHeight="228.0" prefWidth="229.0" GridPane.columnIndex="1" GridPane.rowIndex="4" />
-      <ProgressBar fx:id="progressBar" prefHeight="23.0" prefWidth="207.0" progress="0.0" GridPane.columnIndex="1" GridPane.rowIndex="3" />
+      <ListView fx:id="peopleView" prefHeight="228.0" prefWidth="229.0" GridPane.columnIndex="1" GridPane.rowIndex="11" GridPane.rowSpan="4" />
+      <ProgressBar fx:id="progressBar_1" prefHeight="23.0" prefWidth="407.0" progress="0.0" GridPane.columnIndex="1" GridPane.rowIndex="4" />
+       <ProgressBar fx:id="progressBar_2" prefHeight="23.0" prefWidth="407.0" progress="0.0" GridPane.columnIndex="1" GridPane.rowIndex="6" />
+       <ProgressBar fx:id="progressBar_3" prefHeight="23.0" prefWidth="407.0" progress="0.0" GridPane.columnIndex="1" GridPane.rowIndex="8" />
+       <ProgressBar fx:id="progressBar_4" prefHeight="23.0" prefWidth="407.0" progress="0.0" GridPane.columnIndex="1" GridPane.rowIndex="10" />
+      <Label fx:id="labelName_1" GridPane.columnIndex="1" GridPane.rowIndex="3" />
+      <Label fx:id="labelName_2" GridPane.columnIndex="1" GridPane.rowIndex="5" />
+      <Label fx:id="labelName_3" GridPane.columnIndex="1" GridPane.rowIndex="7" />
+      <Label fx:id="labelName_4" GridPane.columnIndex="1" GridPane.rowIndex="9" />
    </children>
 </GridPane>
