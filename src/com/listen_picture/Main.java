@@ -27,7 +27,7 @@ import static com.sun.org.apache.xalan.internal.xsltc.compiler.Constants.REDIREC
 import static javax.sound.sampled.AudioSystem.getAudioInputStream;
 
 public class Main {
-    static final java.lang.Integer APP_ID = 5770405;
+    public static final java.lang.Integer APP_ID = 5770405;
     public static String vkCode;
 
     public static void drawPoint(Graphics graphics, int x, int y) {
@@ -71,7 +71,6 @@ public class Main {
 
 
     static void vkTest() {
-
 
         Gui.main(new String[] {});
 
