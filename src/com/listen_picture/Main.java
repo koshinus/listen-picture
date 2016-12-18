@@ -26,7 +26,7 @@ import java.util.concurrent.Executors;
 import static javax.sound.sampled.AudioSystem.getAudioInputStream;
 
 public class Main {
-    static final java.lang.Integer APP_ID = 5770405;
+    public static final java.lang.Integer APP_ID = 5770405;
     public static String vkCode;
 
     public static void drawPoint(Graphics graphics, int x, int y) {
@@ -72,7 +72,11 @@ public class Main {
     static void vkTest() {
 
 
-        Gui.main(new String[]{});
+        try {
+            Gui.main(new String[]{});
+        } catch (Exception e) {
+            throw new RuntimeException(e);
+        }
 
         System.out.println(Main.vkCode);
 
@@ -82,29 +86,6 @@ public class Main {
 //        HttpGet get = new HttpGet("http://vk.com/login.php?email=%s&pass=%s");
 
         UserAuthResponse authResponse = null;
-        try {
-            authResponse = vk.oauth()
-                    .userAuthorizationCodeFlow(APP_ID, Config.CLIENT_SECRET, "https://oauth.vk.com/blank.html", vkCode)
-                    .execute();
-        } catch (ApiException | ClientException e) {
-            e.printStackTrace();
-        }
-
-        UserActor actor = new UserActor(authResponse.getUserId(), authResponse.getAccessToken());
-
-
-        try {
-            List audios = vk.audio().get(actor).count(10).execute().getItems();
-            System.out.println();
-
-//            java.util.List users = vk.users().get(actor)
-//                    .fields(UserField.VERIFIED, UserField.SEX, UserField.SCREEN_NAME)
-//                    .lang(Lang.RU)
-//                    .execute();
-
-        } catch (ApiException | ClientException e) {
-            e.printStackTrace();
-        }
     }
 
     // проигрывание картинки, т.е. генерация музыки по картинке
