@@ -28,10 +28,6 @@ public class MainController {
         this.clientSecret = clientSecret;
     }
 
-    public void sayFuckIt(ActionEvent actionEvent) {
-        fuckIt.setText("Hello, brave new world!");
-    }
-
     public void startInitialLoading() {
         TransportClient transportClient = HttpTransportClient.getInstance();
         VkApiClient vk = new VkApiClient(transportClient);
