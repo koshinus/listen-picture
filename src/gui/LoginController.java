@@ -14,6 +14,8 @@ public class LoginController {
     public static final String REDIRECT_URL = "https://oauth.vk.com/blank.html";
     public static final String LOGIN_SUCCESS_PAGE = "blank.html#", LOGIN_FAILURE_PAGE = "blank.html#error";
 
+    // почему-то при вызове отсюда получаю ошибку от вк
+
     public void initialize() {
         String url = "https://oauth.vk.com/authorize?client_id=" + Main.APP_ID + "&display=page&" +
                 "redirect_uri=" + REDIRECT_URL + "&scope=audio&response_type=code&v=5.60";

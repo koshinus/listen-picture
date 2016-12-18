@@ -71,40 +71,7 @@ public class Main {
 
 
     static void vkTest() {
-
         Gui.main(new String[] {});
-
-        System.out.println(Main.vkCode);
-
-        TransportClient transportClient = HttpTransportClient.getInstance();
-        VkApiClient vk = new VkApiClient(transportClient);
-
-//        HttpGet get = new HttpGet("http://vk.com/login.php?email=%s&pass=%s");
-
-        UserAuthResponse authResponse = null;
-        try {
-            authResponse = vk.oauth()
-                    .userAuthorizationCodeFlow(APP_ID, Config.CLIENT_SECRET, "https://oauth.vk.com/blank.html", vkCode)
-                    .execute();
-        } catch (ApiException | ClientException e) {
-            e.printStackTrace();
-        }
-
-        UserActor actor = new UserActor(authResponse.getUserId(), authResponse.getAccessToken());
-
-
-        try {
-            List audios = vk.audio().get(actor).count(10).execute().getItems();
-            System.out.println();
-
-//            java.util.List users = vk.users().get(actor)
-//                    .fields(UserField.VERIFIED, UserField.SEX, UserField.SCREEN_NAME)
-//                    .lang(Lang.RU)
-//                    .execute();
-
-        } catch (ApiException | ClientException e) {
-            e.printStackTrace();
-        }
     }
 
     // проигрывание картинки, т.е. генерация музыки по картинке
