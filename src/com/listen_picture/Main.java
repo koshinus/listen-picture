@@ -1,16 +1,12 @@
 package com.listen_picture;
 
-import com.vk.api.sdk.client.Lang;
 import com.vk.api.sdk.client.TransportClient;
 import com.vk.api.sdk.client.VkApiClient;
-import com.vk.api.sdk.client.actors.ServiceActor;
 import com.vk.api.sdk.client.actors.UserActor;
 import com.vk.api.sdk.exceptions.ApiException;
 import com.vk.api.sdk.exceptions.ClientException;
 import com.vk.api.sdk.httpclient.HttpTransportClient;
-import com.vk.api.sdk.objects.ServiceClientCredentialsFlowResponse;
 import com.vk.api.sdk.objects.UserAuthResponse;
-import com.vk.api.sdk.queries.users.UserField;
 import org.apache.commons.cli.*;
 
 import javax.imageio.ImageIO;
@@ -22,8 +18,11 @@ import java.awt.Color;
 import java.awt.image.BufferedImage;
 import java.io.*;
 import java.util.List;
+import java.util.Random;
+import java.util.concurrent.ConcurrentLinkedQueue;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
 
-import static com.sun.org.apache.xalan.internal.xsltc.compiler.Constants.REDIRECT_URI;
 import static javax.sound.sampled.AudioSystem.getAudioInputStream;
 
 public class Main {
@@ -73,7 +72,7 @@ public class Main {
     static void vkTest() {
 
 
-        Gui.main(new String[] {});
+        Gui.main(new String[]{});
 
         System.out.println(Main.vkCode);
 
@@ -159,31 +158,155 @@ public class Main {
 
     static final int byteShift = 128;
 
+//    private static void encode2(String audioPath) {
+//        final File file = new File(audioPath);
+//
+//        try {
+//            final byte[] buffer = new byte[5000];
+//            FileInputStream fis = new FileInputStream(file);
+//            FileChannel fc = fis.getChannel();
+//
+//            boolean continueRead = true;
+//            int length = 4;
+//            while (continueRead) {
+//                fis.read(buffer, 0, length);
+//                ByteBuffer bb2 = ByteBuffer.allocate(30);
+//                fc.read(bb2, 0);
+//                bb2.flip() ;
+//                ByteBuffer bb = ByteBuffer.wrap(buffer);
+//                if (MPEGFrameHeader.isMPEGFrame(bb2)) {
+//                    System.out.println("YES");
+//                    MPEGFrameHeader header = null;
+//                    header = MPEGFrameHeader.parseMPEGHeader(bb);
+//                    System.out.println(header.getFrameLength());
+//                } else {
+//                    System.out.println("No");
+//                    System.out.println(bb);
+//                    continueRead = false;
+//                }
+//            }
+//
+////            final MP3File mp3File = new MP3File(file);
+////            mp3File.getMP3AudioHeader()
+////            long framesNumber = mp3File.getMP3AudioHeader().getNumberOfFrames();
+////            System.out.println(file.length());
+////            System.out.println(framesNumber);
+////            System.out.println(file.length() / framesNumber);
+//        } catch (IOException | InvalidAudioFrameException e) {
+//            e.printStackTrace();
+//        }
+//    }
+
+    static int FRAME_LENGTH = 1500;
+
+    static class QueueItem<T> {
+        public int order;
+        public T items;
+        public QueueItem(int o, T i){
+            this.order = o;
+            this.items = i;
+        }
+    }
+
+    static ConcurrentLinkedQueue<QueueItem<byte[]>> bytesQueue = new ConcurrentLinkedQueue<>();
+    static ConcurrentLinkedQueue<QueueItem<Color[]>> colorsQueue = new ConcurrentLinkedQueue<>();
+
+    static Random rand = new Random();
+
+    static public class MyTask implements Runnable {
+        QueueItem<byte[]> item;
+        public MyTask(QueueItem<byte[]> i) {
+            this.item = i;
+        }
+
+        public void run() {
+//            QueueItem<byte[]> item = bytesQueue.poll();
+            byte[] bytes = item.items;
+            Color[] result = new Color[FRAME_LENGTH / 3];
+            for (int i = 0; i < FRAME_LENGTH; i += 3) {
+                result[i / 3] = new Color(bytes[i] + byteShift, bytes[i + 1] + byteShift, bytes[i + 2] + byteShift);
+            }
+            System.out.println("Done " + item.order);
+//            try {
+//                Thread.sleep(rand.nextInt(50) + 1);
+//            } catch (InterruptedException e) {
+//                e.printStackTrace();
+//            }
+            colorsQueue.add(new QueueItem<>(item.order, result));
+        }
+    }
+
+    static public class Worker extends Thread {
+        ExecutorService executor;
+
+        public Worker(){
+            this.executor = Executors.newSingleThreadExecutor();
+        }
+
+        public void run() {
+            while( true ) {
+                if (bytesQueue.isEmpty()){
+                    try {
+                        Thread.sleep(500);
+                    } catch (InterruptedException e) {
+                        Thread.currentThread().interrupt();
+                        return;
+                    }
+                } else {
+                    executor.execute(new MyTask(bytesQueue.poll()));
+                }
+            }
+        }
+    }
+
     // преобразование музыки в картинку, сохраняет в файл
     private static void encode(String audioPath) {
         final File file = new File(audioPath);
 
-        BufferedImage bufferedImage = new BufferedImage(1000, 1000, BufferedImage.TYPE_INT_RGB);
+        BufferedImage bufferedImage = new BufferedImage(2000, 500, BufferedImage.TYPE_INT_RGB);
         Graphics graphics = bufferedImage.getGraphics();
 
         try (final AudioInputStream in = getAudioInputStream(file)) {
-            final byte[] buffer = new byte[3];
-            int x = 0;
-            int y = 0;
-
+            int columns = 0;
             int nSum = 0;
-            for (int n = 0; n != -1; n = in.read(buffer, 0, buffer.length)) {
-                nSum += n;
-                Color color = new Color(buffer[0] + byteShift, buffer[1] + byteShift, buffer[2] + byteShift);
-                graphics.setColor(color);
-                drawPoint(graphics, x, y);
 
-                x += 1;
-                if (x > 1000) {
-                    x = 0;
-                    y += 1;
+            Worker w = new Worker();
+            w.start();
+
+            int n = 0;
+            while(n != -1){
+                final byte[] buffer = new byte[FRAME_LENGTH];
+                n = in.read(buffer, 0, buffer.length);
+                nSum += n;
+
+                System.out.println("Pulled " + columns);
+
+                bytesQueue.add(new QueueItem<>(columns, buffer));
+                columns += 1;
+            }
+
+            int columnsDrawed = 0;
+            while( columnsDrawed != columns ) {
+                if (colorsQueue.isEmpty()){
+                    try {
+                        Thread.sleep(500);
+                        System.out.println("wait2 " + columnsDrawed + "/" + columns);
+                    } catch (InterruptedException e) {
+                        Thread.currentThread().interrupt();
+                    }
+                } else {
+                    QueueItem<Color[]> item = colorsQueue.poll();
+                    int x = item.order;
+                    for (int y = 0; y < 500; y+=1){
+                        graphics.setColor(item.items[y]);
+                        drawPoint(graphics, x, y);
+                    }
+                    System.out.println("Drawed " + x);
+                    columnsDrawed += 1;
                 }
             }
+
+            w.interrupt();
 
             ImageIO.write(bufferedImage, "png", new File("saved." + nSum + ".png"));
 
@@ -210,37 +333,37 @@ public class Main {
         System.out.println(bytes1.length);
 
         int readLength = 0;
-            try {
+        try {
+            for (int x = 0; x < image.getWidth(); ++x) {
                 for (int y = 0; y < image.getHeight(); ++y) {
-                    for (int x = 0; x < image.getWidth(); ++x) {
-                        Color color = new Color(image.getRGB(x, y));
-                        readLength += 3;
-                        if (readLength <= length) {
-                            baos.write(new byte[]{
-                                    (byte) (color.getRed() - byteShift),
-                                    (byte) (color.getGreen() - byteShift),
-                                    (byte) (color.getBlue() - byteShift)
-                            });
-                        } else if (readLength - 1 == length) {
-                            baos.write(new byte[]{
-                                    (byte) (color.getRed() - byteShift),
-                                    (byte) (color.getGreen() - byteShift),
-                            });
-                            break;
-                        } else if (readLength - 2 == length) {
-                            baos.write(new byte[]{
-                                    (byte) (color.getRed() - byteShift),
-                            });
-                            break;
-                        } else {
-                            break;
-                        }
+                    Color color = new Color(image.getRGB(x, y));
+                    readLength += 3;
+                    if (readLength <= length) {
+                        baos.write(new byte[]{
+                                (byte) (color.getRed() - byteShift),
+                                (byte) (color.getGreen() - byteShift),
+                                (byte) (color.getBlue() - byteShift)
+                        });
+                    } else if (readLength - 1 == length) {
+                        baos.write(new byte[]{
+                                (byte) (color.getRed() - byteShift),
+                                (byte) (color.getGreen() - byteShift),
+                        });
+                        break;
+                    } else if (readLength - 2 == length) {
+                        baos.write(new byte[]{
+                                (byte) (color.getRed() - byteShift),
+                        });
+                        break;
+                    } else {
+                        break;
                     }
-                    if (readLength > length) break;
                 }
-
-            } catch (IOException e) {
+                if (readLength > length) break;
             }
+
+        } catch (IOException e) {
+        }
 
 
         byte[] bytes = baos.toByteArray();
