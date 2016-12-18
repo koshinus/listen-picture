@@ -26,10 +26,16 @@ public class Gui extends Application {
         primaryStage.setTitle("Listen Picture");
 
         try {
-            FXMLLoader fxmlLoader = new FXMLLoader(getClass().getResource("/gui/login.fxml"));
+//            FXMLLoader fxmlLoader = new FXMLLoader(getClass().getResource("/gui/login.fxml"));
+//            Parent root = (Parent) fxmlLoader.load();
+//            LoginController controller = fxmlLoader.<LoginController>getController();
+//            controller.initialize(primaryStage, Main.APP_ID, null, Config.CLIENT_SECRET);
+
+            FXMLLoader fxmlLoader = new FXMLLoader(getClass().getResource("/gui/main.fxml"));
             Parent root = (Parent) fxmlLoader.load();
-            LoginController controller = fxmlLoader.<LoginController>getController();
-            controller.initialize(primaryStage, Main.APP_ID, null, Config.CLIENT_SECRET);
+            MainController controller = fxmlLoader.<MainController>getController();
+            controller.initialize(primaryStage);
+
             controller.start();
             primaryStage.setScene(new Scene(root, 660, 380));
             primaryStage.show();

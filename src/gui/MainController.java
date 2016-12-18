@@ -28,32 +28,12 @@ public class MainController {
         this.clientSecret = clientSecret;
     }
 
-    public void startInitialLoading() {
-        TransportClient transportClient = HttpTransportClient.getInstance();
-        VkApiClient vk = new VkApiClient(transportClient);
+    public void initialize(Stage primaryStage) {
+        this.primaryStage = primaryStage;
+    }
 
-        UserAuthResponse authResponse = null;
-        try {
-            authResponse = vk.oauth()
-                    .userAuthorizationCodeFlow(appId, clientSecret, "https://oauth.vk.com/blank.html", vkCode)
-                    .execute();
-        } catch (ApiException | ClientException e) {
-            e.printStackTrace();
-        }
 
-        UserActor actor = new UserActor(authResponse.getUserId(), authResponse.getAccessToken());
+    public void startInitialLoading(List<String> songs) {
 
-        try {
-            List audios = vk.audio().get(actor).count(10).execute().getItems();
-            System.out.println();
-
-//            java.util.List users = vk.users().get(actor)
-//                    .fields(UserField.VERIFIED, UserField.SEX, UserField.SCREEN_NAME)
-//                    .lang(Lang.RU)
-//                    .execute();
-
-        } catch (ApiException | ClientException e) {
-            e.printStackTrace();
-        }
     }
 }
