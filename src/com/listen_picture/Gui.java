@@ -1,44 +1,39 @@
 package com.listen_picture;
 
-import gui.LoginController;
-import gui.MainController;
 import javafx.application.Application;
+import javafx.beans.value.*;
+import javafx.collections.*;
+import javafx.concurrent.*;
+import javafx.event.*;
 import javafx.scene.Scene;
-import javafx.scene.layout.StackPane;
-import javafx.scene.web.WebEngine;
-import javafx.scene.web.WebView;
+import javafx.scene.control.*;
+import javafx.scene.layout.*;
 import javafx.stage.Stage;
 import javafx.fxml.FXMLLoader;
 import javafx.scene.Parent;
-import javafx.concurrent.Worker.State;
+
+import gui.MainController;
+
+import java.util.ArrayList;
+import java.util.List;
 
 public class Gui extends Application {
 
-    public static void main(String[] args) {
-        launch(args);
-    }
-
-    public static final String REDIRECT_URL = "https://oauth.vk.com/blank.html";
-    public static final String LOGIN_SUCCESS_PAGE = "blank.html#", LOGIN_FAILURE_PAGE = "blank.html#error";
+    public static void main(String[] args) throws Exception { launch(args); }
 
     @Override
     public void start(Stage primaryStage) {
         primaryStage.setTitle("Listen Picture");
 
         try {
-//            FXMLLoader fxmlLoader = new FXMLLoader(getClass().getResource("/gui/login.fxml"));
-//            Parent root = (Parent) fxmlLoader.load();
-//            LoginController controller = fxmlLoader.<LoginController>getController();
-//            controller.initialize(primaryStage, Main.APP_ID, null, Config.CLIENT_SECRET);
-
             FXMLLoader fxmlLoader = new FXMLLoader(getClass().getResource("/gui/main.fxml"));
             Parent root = (Parent) fxmlLoader.load();
             MainController controller = fxmlLoader.<MainController>getController();
             controller.initialize(primaryStage);
 
-            controller.start();
-            primaryStage.setScene(new Scene(root, 660, 380));
+            primaryStage.setScene(new Scene(root));
             primaryStage.show();
+            controller.startInitialLoading(new ArrayList<>());
         } catch (Exception e) {
             e.printStackTrace();
             throw new RuntimeException(e);

@@ -71,7 +71,11 @@ public class Main {
 
 
     static void vkTest() {
-        Gui.main(new String[] {});
+        try {
+            Gui.main(new String[]{});
+        } catch (Exception e) {
+            throw new RuntimeException(e);
+        }
     }
 
     // проигрывание картинки, т.е. генерация музыки по картинке
