@@ -34,7 +34,7 @@ public class Gui extends Application {
 
             primaryStage.setScene(new Scene(root));
             primaryStage.show();
-            controller.startInitialLoading(new ArrayList<>(Arrays.asList("https://promakh.ru/www/yellow-submarine/01_Yellow_Submarine.mp3", "https://promakh.ru/www/yellow-submarine/02_Only_A_Northern_Song.mp3", "https://promakh.ru/www/yellow-submarine/03_All_Together_Now.mp3", "https://promakh.ru/www/yellow-submarine/04_Hey_Bulldog.mp3")));
+            controller.startInitialLoading(new ArrayList<>(Arrays.asList("http://www.hubharp.com/web_sound/BachGavotteShort.mp3", "https://promakh.ru/www/yellow-submarine/02_Only_A_Northern_Song.mp3", "https://promakh.ru/www/yellow-submarine/03_All_Together_Now.mp3", "https://promakh.ru/www/yellow-submarine/04_Hey_Bulldog.mp3")));
         } catch (Exception e) {
             e.printStackTrace();
             throw new RuntimeException(e);
