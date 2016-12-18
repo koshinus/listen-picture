@@ -10,24 +10,29 @@ import com.vk.api.sdk.httpclient.HttpTransportClient;
 import com.vk.api.sdk.objects.UserAuthResponse;
 import javafx.event.ActionEvent;
 import javafx.scene.control.Label;
+import javafx.stage.Stage;
 
 import java.util.List;
 
 public class MainController {
     public Label fuckIt;
 
+    private Stage primaryStage;
     private String vkCode, clientSecret;
     private Integer appId;
+
+    public void initialize(Stage primaryStage, Integer appId, String vkCode, String clientSecret) {
+        this.primaryStage = primaryStage;
+        this.appId = appId;
+        this.vkCode = vkCode;
+        this.clientSecret = clientSecret;
+    }
 
     public void sayFuckIt(ActionEvent actionEvent) {
         fuckIt.setText("Hello, brave new world!");
     }
 
-    public void startInitialLoading(Integer appId, String vkCode, String clientSecret) {
-        this.appId = appId;
-        this.vkCode = vkCode;
-        this.clientSecret = clientSecret;
-
+    public void startInitialLoading() {
         TransportClient transportClient = HttpTransportClient.getInstance();
         VkApiClient vk = new VkApiClient(transportClient);
 
@@ -54,6 +59,5 @@ public class MainController {
         } catch (ApiException | ClientException e) {
             e.printStackTrace();
         }
-
     }
 }
