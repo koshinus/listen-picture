@@ -1,22 +1,37 @@
 package gui;
 
+import com.listen_picture.Main;
+import com.sun.codemodel.internal.JLabel;
+import javafx.application.Platform;
 import javafx.beans.value.ChangeListener;
 import javafx.beans.value.ObservableValue;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
 import javafx.concurrent.Task;
 import javafx.concurrent.Worker;
+import javafx.embed.swing.SwingFXUtils;
+import javafx.embed.swing.SwingNode;
 import javafx.event.ActionEvent;
 import javafx.event.EventHandler;
+import javafx.scene.Group;
+import javafx.scene.Scene;
+import javafx.scene.canvas.GraphicsContext;
 import javafx.scene.control.Button;
 import javafx.scene.control.Label;
 import javafx.scene.control.ListView;
 import javafx.scene.control.ProgressBar;
+import javafx.scene.image.WritableImage;
 import javafx.stage.Stage;
 
 import javafx.scene.canvas.Canvas;
+
+import javax.imageio.ImageIO;
+import java.awt.*;
+import java.awt.image.BufferedImage;
 import java.io.BufferedInputStream;
+import java.io.File;
 import java.io.FileOutputStream;
+import java.io.IOException;
 import java.net.URL;
 import java.net.URLConnection;
 import java.util.List;
@@ -47,7 +62,6 @@ public class MainController {
                     final Task task = new Task<ObservableList<String>>() {
                         @Override
                         protected ObservableList<String> call() throws InterruptedException {
-//                            updateMessage("Finding friends . . .");
                             BufferedInputStream in = null;
                             FileOutputStream out = null;
                             try {
@@ -61,7 +75,7 @@ public class MainController {
 
                                 in = new BufferedInputStream(url.openStream());
                                 String[] bits = currentSong.split("/");
-                                String lastOne = bits[bits.length-1];
+                                String lastOne = bits[bits.length - 1];
                                 out = new FileOutputStream(lastOne);
                                 byte data[] = new byte[1024];
                                 int count;
@@ -70,7 +84,7 @@ public class MainController {
                                 while ((count = in.read(data, 0, 1024)) != -1) {
                                     out.write(data, 0, count);
                                     sumCount += count;
-                                    updateProgress((int)((sumCount / size) * 100), 100);
+                                    updateProgress((int) ((sumCount / size) * 100), 100);
                                 }
                             } catch (Exception e) {
                                 System.out.println(e.fillInStackTrace());
@@ -108,32 +122,43 @@ public class MainController {
 
         //todo тут обработчики кнопок, которые прокидывают параметр на startDrawing()
 
-        button_1.setOnAction(new EventHandler<ActionEvent>() {
-            @Override
-            public void handle(ActionEvent actionEvent) {
-                startDrawing("-fx-background-color: red");
-            }
-        });
+        button_1.setOnAction(actionEvent -> {
 
-        button_2.setOnAction(new EventHandler<ActionEvent>() {
-            @Override
-            public void handle(ActionEvent actionEvent) {
-                startDrawing("-fx-background-color: gray");
-            }
-        });
+            Group root = new Group();
+            Stage stage = new Stage();
 
-        button_3.setOnAction(new EventHandler<ActionEvent>() {
-            @Override
-            public void handle(ActionEvent actionEvent) {
-                startDrawing("-fx-background-color: green");
-            }
-        });
+//                SwingNode sn  = new SwingNode();
+//                javax.swing.JLabel label = new javax.swing.JLabel();
 
-        button_4.setOnAction(new EventHandler<ActionEvent>() {
-            @Override
-            public void handle(ActionEvent actionEvent) {
-                startDrawing("-fx-background-color: yellow");
-            }
+//                new Graphics()
+
+//                sn.setContent(label);
+//                Graphics g = label.getGraphics();
+            Canvas canvas1 = new Canvas(1000, 500);
+            root.getChildren().add(canvas1);
+
+
+            GraphicsContext gc = canvas1.getGraphicsContext2D();
+            GraphicsAdapter ga = new GraphicsAdapter(gc);
+            Main.MyThread t = Main.encode("samples/Help.mp3", ga);
+
+            stage.setScene(new Scene(root));
+            stage.show();
+
+            new Thread(() -> {
+                try {
+                    t.join();
+                } catch (InterruptedException e) {
+                    e.printStackTrace();
+                }
+
+                Main.decode(t.image, t.length);
+
+            }).start();
+
+
+//                startDrawing("-fx-background-color: red");
+//                System.out.println("213");
         });
     }
 

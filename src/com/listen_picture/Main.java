@@ -7,6 +7,7 @@ import com.vk.api.sdk.exceptions.ApiException;
 import com.vk.api.sdk.exceptions.ClientException;
 import com.vk.api.sdk.httpclient.HttpTransportClient;
 import com.vk.api.sdk.objects.UserAuthResponse;
+import javafx.scene.canvas.GraphicsContext;
 import org.apache.commons.cli.*;
 
 import javax.imageio.ImageIO;
@@ -22,6 +23,7 @@ import java.util.Random;
 import java.util.concurrent.ConcurrentLinkedQueue;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
+import java.util.concurrent.ThreadPoolExecutor;
 
 import static javax.sound.sampled.AudioSystem.getAudioInputStream;
 
@@ -52,14 +54,14 @@ public class Main {
                 play();
                 break;
             case "encode":
-                encode(filePath);
+//                encode(filePath);
                 break;
             case "decode":
-                try {
-                    decode(filePath);
-                } catch (IOException e) {
-                    e.printStackTrace();
-                }
+//                try {
+//                    decode(filePath);
+//                } catch (IOException e) {
+//                    e.printStackTrace();
+//                }
                 break;
             case "vk-test": {
                 vkTest();
@@ -69,22 +71,11 @@ public class Main {
 
 
     static void vkTest() {
-
-
         try {
             Gui.main(new String[]{});
         } catch (Exception e) {
             throw new RuntimeException(e);
         }
-
-        System.out.println(Main.vkCode);
-
-        TransportClient transportClient = HttpTransportClient.getInstance();
-        VkApiClient vk = new VkApiClient(transportClient);
-
-//        HttpGet get = new HttpGet("http://vk.com/login.php?email=%s&pass=%s");
-
-        UserAuthResponse authResponse = null;
     }
 
     // проигрывание картинки, т.е. генерация музыки по картинке
@@ -106,7 +97,7 @@ public class Main {
         midiSynthesizer.loadInstrument(instruments[0]);//load an instrument
         MidiChannel channel = mChannels[0];
 
-        JLabel label = new JLabel(new ImageIcon(img));
+        javax.swing.JLabel label = new javax.swing.JLabel(new ImageIcon(img));
 
         JFrame f = new JFrame();
         f.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
@@ -136,47 +127,8 @@ public class Main {
         }
     }
 
+
     static final int byteShift = 128;
-
-//    private static void encode2(String audioPath) {
-//        final File file = new File(audioPath);
-//
-//        try {
-//            final byte[] buffer = new byte[5000];
-//            FileInputStream fis = new FileInputStream(file);
-//            FileChannel fc = fis.getChannel();
-//
-//            boolean continueRead = true;
-//            int length = 4;
-//            while (continueRead) {
-//                fis.read(buffer, 0, length);
-//                ByteBuffer bb2 = ByteBuffer.allocate(30);
-//                fc.read(bb2, 0);
-//                bb2.flip() ;
-//                ByteBuffer bb = ByteBuffer.wrap(buffer);
-//                if (MPEGFrameHeader.isMPEGFrame(bb2)) {
-//                    System.out.println("YES");
-//                    MPEGFrameHeader header = null;
-//                    header = MPEGFrameHeader.parseMPEGHeader(bb);
-//                    System.out.println(header.getFrameLength());
-//                } else {
-//                    System.out.println("No");
-//                    System.out.println(bb);
-//                    continueRead = false;
-//                }
-//            }
-//
-////            final MP3File mp3File = new MP3File(file);
-////            mp3File.getMP3AudioHeader()
-////            long framesNumber = mp3File.getMP3AudioHeader().getNumberOfFrames();
-////            System.out.println(file.length());
-////            System.out.println(framesNumber);
-////            System.out.println(file.length() / framesNumber);
-//        } catch (IOException | InvalidAudioFrameException e) {
-//            e.printStackTrace();
-//        }
-//    }
-
     static int FRAME_LENGTH = 1500;
 
     static class QueueItem<T> {
@@ -187,7 +139,6 @@ public class Main {
             this.items = i;
         }
     }
-
     static ConcurrentLinkedQueue<QueueItem<byte[]>> bytesQueue = new ConcurrentLinkedQueue<>();
     static ConcurrentLinkedQueue<QueueItem<Color[]>> colorsQueue = new ConcurrentLinkedQueue<>();
 
@@ -207,11 +158,11 @@ public class Main {
                 result[i / 3] = new Color(bytes[i] + byteShift, bytes[i + 1] + byteShift, bytes[i + 2] + byteShift);
             }
             System.out.println("Done " + item.order);
-//            try {
-//                Thread.sleep(rand.nextInt(50) + 1);
-//            } catch (InterruptedException e) {
-//                e.printStackTrace();
-//            }
+            try {
+                Thread.sleep(rand.nextInt(150) + 1);
+            } catch (InterruptedException e) {
+                e.printStackTrace();
+            }
             colorsQueue.add(new QueueItem<>(item.order, result));
         }
     }
@@ -220,7 +171,8 @@ public class Main {
         ExecutorService executor;
 
         public Worker(){
-            this.executor = Executors.newSingleThreadExecutor();
+            this.executor = Executors.newFixedThreadPool(4);
+            start();
         }
 
         public void run() {
@@ -238,20 +190,27 @@ public class Main {
             }
         }
     }
+    private static Worker w = new Worker();
+
+    public static class MyThread extends Thread {
+        public int length;
+        public BufferedImage image;
+
+        public MyThread(Runnable target){
+            super(target);
+        }
+    }
 
     // преобразование музыки в картинку, сохраняет в файл
-    private static void encode(String audioPath) {
+    public static MyThread encode(String audioPath, Graphics graphics) {
         final File file = new File(audioPath);
 
         BufferedImage bufferedImage = new BufferedImage(2000, 500, BufferedImage.TYPE_INT_RGB);
-        Graphics graphics = bufferedImage.getGraphics();
+        Graphics imageG = bufferedImage.getGraphics();
 
         try (final AudioInputStream in = getAudioInputStream(file)) {
             int columns = 0;
             int nSum = 0;
-
-            Worker w = new Worker();
-            w.start();
 
             int n = 0;
             while(n != -1){
@@ -259,36 +218,47 @@ public class Main {
                 n = in.read(buffer, 0, buffer.length);
                 nSum += n;
 
-                System.out.println("Pulled " + columns);
+//                System.out.println("Pulled " + columns);
 
                 bytesQueue.add(new QueueItem<>(columns, buffer));
                 columns += 1;
             }
 
-            int columnsDrawed = 0;
-            while( columnsDrawed != columns ) {
-                if (colorsQueue.isEmpty()){
-                    try {
-                        Thread.sleep(500);
-                        System.out.println("wait2 " + columnsDrawed + "/" + columns);
-                    } catch (InterruptedException e) {
-                        Thread.currentThread().interrupt();
+            final int cl = columns;
+
+            MyThread t;
+            t = new MyThread(() -> {
+                int columnsDrawed = 0;
+                while( columnsDrawed != cl ) {
+                    if (colorsQueue.isEmpty()){
+                        try {
+                            Thread.sleep(500);
+                            System.out.println("wait2 " + columnsDrawed + "/" + cl);
+                        } catch (InterruptedException e) {
+                            Thread.currentThread().interrupt();
+                        }
+                    } else {
+                        QueueItem<Color[]> item = colorsQueue.poll();
+                        int x = item.order;
+                        for (int y = 0; y < 500; y+=1){
+                            graphics.setColor(item.items[y]);
+                            imageG.setColor(item.items[y]);
+                            drawPoint(graphics, x, y);
+                            drawPoint(imageG, x, y);
+                        }
+//                        System.out.println("Drawed " + x);
+                        columnsDrawed += 1;
                     }
-                } else {
-                    QueueItem<Color[]> item = colorsQueue.poll();
-                    int x = item.order;
-                    for (int y = 0; y < 500; y+=1){
-                        graphics.setColor(item.items[y]);
-                        drawPoint(graphics, x, y);
-                    }
-                    System.out.println("Drawed " + x);
-                    columnsDrawed += 1;
                 }
-            }
+            });
 
-            w.interrupt();
+            t.length = nSum;
+            t.image = bufferedImage;
+            t.start();
 
-            ImageIO.write(bufferedImage, "png", new File("saved." + nSum + ".png"));
+            return t;
+
+//            ImageIO.write(bufferedImage, "png", new File("saved." + nSum + ".png"));
 
         } catch (UnsupportedAudioFileException | IOException e) {
             throw new IllegalStateException(e);
@@ -296,17 +266,18 @@ public class Main {
     }
 
     // проигрывание картинки, сгенерированной с помощью функции encode
-    public static void decode(String path) throws IOException {
-        final File file = new File(path);
-        String[] split = path.split("\\.", -1);
-        int length = Integer.parseInt(split[split.length - 2]);
+//    public static void decode(String path) throws IOException {
+    public static void decode(BufferedImage image, int length) {
+//        final File file = new File(path);
+//        String[] split = path.split("\\.", -1);
+//        int length = Integer.parseInt(split[split.length - 2]);
 
-        BufferedImage image = null;
-        try {
-            image = ImageIO.read(file);
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
+//        BufferedImage image = null;
+//        try {
+//            image = ImageIO.read(file);
+//        } catch (IOException e) {
+//            e.printStackTrace();
+//        }
 
         ByteArrayOutputStream baos = new ByteArrayOutputStream();
         byte[] bytes1 = baos.toByteArray();
