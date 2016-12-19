@@ -4,3 +4,5 @@
 /dependencies
 /src/com/listen_picture/Config.java
 /.gradle
+
+*.mp3
