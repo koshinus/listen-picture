@@ -1,5 +1,6 @@
 package gui;
 
+import com.listen_picture.Converter;
 import com.listen_picture.Main;
 import com.sun.codemodel.internal.JLabel;
 import javafx.application.Platform;
@@ -21,6 +22,7 @@ import javafx.scene.control.Label;
 import javafx.scene.control.ListView;
 import javafx.scene.control.ProgressBar;
 import javafx.scene.image.WritableImage;
+import javafx.scene.input.MouseEvent;
 import javafx.stage.Stage;
 
 import javafx.scene.canvas.Canvas;
@@ -42,7 +44,6 @@ public class MainController {
     public Button runButton, button_1, button_2, button_3, button_4;
     public ListView<String> peopleView;
     public ProgressBar progressBar_1, progressBar_2, progressBar_3, progressBar_4, progressBars[];
-    public Canvas canvas;
 
     public void initialize(Stage primaryStage) {
         this.primaryStage = primaryStage;
@@ -133,38 +134,18 @@ public class MainController {
         //todo тут обработчики кнопок, которые прокидывают параметр на startDrawing()
 
         button_1.setOnAction(actionEvent -> {
-
-            Group root = new Group();
-            Stage stage = new Stage();
-
-//                SwingNode sn  = new SwingNode();
-//                javax.swing.JLabel label = new javax.swing.JLabel();
-
-//                new Graphics()
-
-//                sn.setContent(label);
-//                Graphics g = label.getGraphics();
-            Canvas canvas1 = new Canvas(1000, 500);
-            root.getChildren().add(canvas1);
-
-
-            GraphicsContext gc = canvas1.getGraphicsContext2D();
-            GraphicsAdapter ga = new GraphicsAdapter(gc);
-            Main.MyThread t = Main.encode("samples/Help.mp3", ga);
-
-            stage.setScene(new Scene(root));
-            stage.show();
-
-            new Thread(() -> {
-                try {
-                    t.join();
-                } catch (InterruptedException e) {
-                    e.printStackTrace();
-                }
-
-                Main.decode(t.image, t.length);
-
-            }).start();
+            openCanvasWindow("samples/Help.mp3");
+            openCanvasWindow("BachGavotteShort.mp3");
+//            new Thread(() -> {
+//                try {
+//                    t.join();
+//                } catch (InterruptedException e) {
+//                    e.printStackTrace();
+//                }
+//
+//                Main.decode(t.image, t.length);
+//
+//            }).start();
 
 
 //                startDrawing("-fx-background-color: red");
@@ -174,5 +155,30 @@ public class MainController {
 //        button_2.setOnAction(actionEvent -> {
 //
 //        });
+    }
+
+    void openCanvasWindow(String filePath) {
+        Group root = new Group();
+        Stage stage = new Stage();
+        Canvas canvas = new Canvas(1000, 500);
+        root.getChildren().add(canvas);
+
+        GraphicsContext gc = canvas.getGraphicsContext2D();
+        GraphicsAdapter ga = new GraphicsAdapter(gc);
+        final Converter converter = new Converter();
+        Main.MyThread t = converter.encode(filePath, ga);
+
+        stage.setScene(new Scene(root));
+        stage.show();
+
+        canvas.addEventHandler(MouseEvent.MOUSE_CLICKED, t1 -> {
+            try {
+                t.join();
+            } catch (InterruptedException e) {
+                e.printStackTrace();
+            }
+            Main.decode(t.image, t.length);
+            t.runned = true;
+        });
     }
 }

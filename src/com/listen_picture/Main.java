@@ -1,13 +1,5 @@
 package com.listen_picture;
 
-import com.vk.api.sdk.client.TransportClient;
-import com.vk.api.sdk.client.VkApiClient;
-import com.vk.api.sdk.client.actors.UserActor;
-import com.vk.api.sdk.exceptions.ApiException;
-import com.vk.api.sdk.exceptions.ClientException;
-import com.vk.api.sdk.httpclient.HttpTransportClient;
-import com.vk.api.sdk.objects.UserAuthResponse;
-import javafx.scene.canvas.GraphicsContext;
 import org.apache.commons.cli.*;
 
 import javax.imageio.ImageIO;
@@ -18,22 +10,10 @@ import java.awt.Graphics;
 import java.awt.Color;
 import java.awt.image.BufferedImage;
 import java.io.*;
-import java.util.List;
-import java.util.Random;
-import java.util.concurrent.ConcurrentLinkedQueue;
-import java.util.concurrent.ExecutorService;
-import java.util.concurrent.Executors;
-import java.util.concurrent.ThreadPoolExecutor;
 
 import static javax.sound.sampled.AudioSystem.getAudioInputStream;
 
 public class Main {
-    public static final java.lang.Integer APP_ID = 5770405;
-    public static String vkCode;
-
-    public static void drawPoint(Graphics graphics, int x, int y) {
-        graphics.drawLine(x, y, x, y);
-    }
 
     public static void main(String[] args) throws MidiUnavailableException {
         Options options = new Options();
@@ -109,7 +89,7 @@ public class Main {
 
         for (int y = 0; y < img.getHeight(); ++y) {
             for (int x = 0; x < img.getWidth(); ++x) {
-                drawPoint(graphics, x, y);
+                graphics.drawLine(x,y, x, y);
                 f.pack();
 
                 Color color = new Color(img.getRGB(x, y));
@@ -128,8 +108,7 @@ public class Main {
     }
 
 
-    static final int byteShift = 128;
-    static int FRAME_LENGTH = 1500;
+
 
     static class QueueItem<T> {
         public int order;
@@ -139,131 +118,16 @@ public class Main {
             this.items = i;
         }
     }
-    static ConcurrentLinkedQueue<QueueItem<byte[]>> bytesQueue = new ConcurrentLinkedQueue<>();
-    static ConcurrentLinkedQueue<QueueItem<Color[]>> colorsQueue = new ConcurrentLinkedQueue<>();
-
-    static Random rand = new Random();
-
-    static public class MyTask implements Runnable {
-        QueueItem<byte[]> item;
-        public MyTask(QueueItem<byte[]> i) {
-            this.item = i;
-        }
-
-        public void run() {
-//            QueueItem<byte[]> item = bytesQueue.poll();
-            byte[] bytes = item.items;
-            Color[] result = new Color[FRAME_LENGTH / 3];
-            for (int i = 0; i < FRAME_LENGTH; i += 3) {
-                result[i / 3] = new Color(bytes[i] + byteShift, bytes[i + 1] + byteShift, bytes[i + 2] + byteShift);
-            }
-            System.out.println("Done " + item.order);
-            try {
-                Thread.sleep(rand.nextInt(150) + 1);
-            } catch (InterruptedException e) {
-                e.printStackTrace();
-            }
-            colorsQueue.add(new QueueItem<>(item.order, result));
-        }
-    }
-
-    static public class Worker extends Thread {
-        ExecutorService executor;
-
-        public Worker(){
-            this.executor = Executors.newFixedThreadPool(4);
-            start();
-        }
-
-        public void run() {
-            while( true ) {
-                if (bytesQueue.isEmpty()){
-                    try {
-                        Thread.sleep(500);
-                    } catch (InterruptedException e) {
-                        Thread.currentThread().interrupt();
-                        return;
-                    }
-                } else {
-                    executor.execute(new MyTask(bytesQueue.poll()));
-                }
-            }
-        }
-    }
-    private static Worker w = new Worker();
-
     public static class MyThread extends Thread {
         public int length;
         public BufferedImage image;
+        public boolean runned = false;
 
         public MyThread(Runnable target){
             super(target);
         }
     }
 
-    // преобразование музыки в картинку, сохраняет в файл
-    public static MyThread encode(String audioPath, Graphics graphics) {
-        final File file = new File(audioPath);
-
-        BufferedImage bufferedImage = new BufferedImage(2000, 500, BufferedImage.TYPE_INT_RGB);
-        Graphics imageG = bufferedImage.getGraphics();
-
-        try (final AudioInputStream in = getAudioInputStream(file)) {
-            int columns = 0;
-            int nSum = 0;
-
-            int n = 0;
-            while(n != -1){
-                final byte[] buffer = new byte[FRAME_LENGTH];
-                n = in.read(buffer, 0, buffer.length);
-                nSum += n;
-
-//                System.out.println("Pulled " + columns);
-
-                bytesQueue.add(new QueueItem<>(columns, buffer));
-                columns += 1;
-            }
-
-            final int cl = columns;
-
-            MyThread t;
-            t = new MyThread(() -> {
-                int columnsDrawed = 0;
-                while( columnsDrawed != cl ) {
-                    if (colorsQueue.isEmpty()){
-                        try {
-                            Thread.sleep(500);
-                            System.out.println("wait2 " + columnsDrawed + "/" + cl);
-                        } catch (InterruptedException e) {
-                            Thread.currentThread().interrupt();
-                        }
-                    } else {
-                        QueueItem<Color[]> item = colorsQueue.poll();
-                        int x = item.order;
-                        for (int y = 0; y < 500; y+=1){
-                            graphics.setColor(item.items[y]);
-                            imageG.setColor(item.items[y]);
-                            drawPoint(graphics, x, y);
-                            drawPoint(imageG, x, y);
-                        }
-//                        System.out.println("Drawed " + x);
-                        columnsDrawed += 1;
-                    }
-                }
-            });
-
-            t.length = nSum;
-            t.image = bufferedImage;
-            t.start();
-
-            return t;
-
-//            ImageIO.write(bufferedImage, "png", new File("saved." + nSum + ".png"));
-
-        } catch (UnsupportedAudioFileException | IOException e) {
-            throw new IllegalStateException(e);
-        }
-    }
 
     // проигрывание картинки, сгенерированной с помощью функции encode
 //    public static void decode(String path) throws IOException {
@@ -291,19 +155,19 @@ public class Main {
                     readLength += 3;
                     if (readLength <= length) {
                         baos.write(new byte[]{
-                                (byte) (color.getRed() - byteShift),
-                                (byte) (color.getGreen() - byteShift),
-                                (byte) (color.getBlue() - byteShift)
+                                (byte) (color.getRed() - Converter.byteShift),
+                                (byte) (color.getGreen() - Converter.byteShift),
+                                (byte) (color.getBlue() - Converter.byteShift)
                         });
                     } else if (readLength - 1 == length) {
                         baos.write(new byte[]{
-                                (byte) (color.getRed() - byteShift),
-                                (byte) (color.getGreen() - byteShift),
+                                (byte) (color.getRed() - Converter.byteShift),
+                                (byte) (color.getGreen() - Converter.byteShift),
                         });
                         break;
                     } else if (readLength - 2 == length) {
                         baos.write(new byte[]{
-                                (byte) (color.getRed() - byteShift),
+                                (byte) (color.getRed() - Converter.byteShift),
                         });
                         break;
                     } else {
