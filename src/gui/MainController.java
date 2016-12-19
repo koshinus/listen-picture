@@ -26,6 +26,8 @@ import javafx.scene.input.MouseEvent;
 import javafx.stage.Stage;
 
 import javafx.scene.canvas.Canvas;
+import javafx.geometry.Rectangle2D;
+import javafx.stage.Screen;
 
 import javax.imageio.ImageIO;
 import java.awt.*;
@@ -44,6 +46,8 @@ public class MainController {
     public Button runButton, button_1, button_2, button_3, button_4;
     public ProgressBar progressBar_1, progressBar_2, progressBar_3, progressBar_4, progressBars[];
 
+    final int canvasSizeX = 1000, canvasSizeY = 500;
+
     public void initialize(Stage primaryStage) {
         this.primaryStage = primaryStage;
         this.progressBars = new ProgressBar[]{progressBar_1, progressBar_2, progressBar_3, progressBar_4};
@@ -55,12 +59,20 @@ public class MainController {
         labelName_3.setText(songs.get(2));
         labelName_4.setText(songs.get(3));
 
+        Rectangle2D primaryScreenBounds = Screen.getPrimary().getVisualBounds();
+        double rightX = primaryScreenBounds.getWidth() - canvasSizeX;
+        double rightY = primaryScreenBounds.getHeight() - canvasSizeY;
+        double[][] bounds = { {0, 0}, {rightX, 0}, {0, rightY}, {rightX, rightY} };
         runButton.setOnAction(new EventHandler<ActionEvent>() {
             @Override
             public void handle(ActionEvent actionEvent) {
                 int index = 0;
                 for (ProgressBar progressBar : progressBars) {
+                    final double X = bounds[index][0];
+                    final double Y = bounds[index][1];
                     final String currentSong = songs.get(index);
+                    String[] bits = currentSong.split("/");
+                    final String currentSongName = bits[bits.length - 1];
                     final Task task = new Task<ObservableList<String>>() {
                         @Override
                         protected ObservableList<String> call() throws InterruptedException {
@@ -76,9 +88,7 @@ public class MainController {
                                 }
 
                                 in = new BufferedInputStream(url.openStream());
-                                String[] bits = currentSong.split("/");
-                                String lastOne = bits[bits.length - 1];
-                                out = new FileOutputStream(lastOne);
+                                out = new FileOutputStream(currentSongName);
                                 byte data[] = new byte[1024];
                                 int count;
                                 double sumCount = 0.0;
@@ -94,26 +104,22 @@ public class MainController {
                             }
                             return FXCollections.observableArrayList(songs);
                         }
-                        // todo тут писать когда файл музыкальный загрузился
-                        //          @Override protected void done() {
-                        //            super.done();
-                        //            System.out.println("This is bad, do not do this, this thread " + Thread.currentThread() + " is not the FXApplication thread.");
-                        //            runButton.setText("Voila!");
-                        //          }
+
+
+                        @Override
+                        protected void done() {
+                            super.done();
+                            System.out.println(currentSong);
+
+                            Platform.runLater(() -> {
+                                openCanvasWindow(currentSongName, X, Y);
+                            });
+                        }
                     };
 
                     statusLabel.textProperty().bind(task.messageProperty());
                     runButton.disableProperty().bind(task.runningProperty());
                     progressBar.progressProperty().bind(task.progressProperty());
-                    task.stateProperty().addListener(new ChangeListener<Worker.State>() {
-                        @Override
-                        public void changed(ObservableValue<? extends Worker.State> observableValue, Worker.State oldState, Worker.State newState) {
-                            if (newState == Worker.State.SUCCEEDED) {
-                                System.out.println("This is ok, this thread " + Thread.currentThread() + " is the JavaFX Application thread.");
-                                runButton.setText("Voila!");
-                            }
-                        }
-                    });
 
                     new Thread(task).start();
                     index++;
@@ -122,26 +128,26 @@ public class MainController {
         });
 
 
-        //todo тут обработчики кнопок, которые прокидывают параметр на startDrawing()
-
-        button_1.setOnAction(actionEvent -> {
-            openCanvasWindow("samples/Help.mp3");
-            openCanvasWindow("BachGavotteShort.mp3");
-//            new Thread(() -> {
-//                try {
-//                    t.join();
-//                } catch (InterruptedException e) {
-//                    e.printStackTrace();
-//                }
+//        //todo тут обработчики кнопок, которые прокидывают параметр на startDrawing()
 //
-//                Main.decode(t.image, t.length);
-//
-//            }).start();
+//        button_1.setOnAction(actionEvent -> {
+//            openCanvasWindow("samples/Help.mp3");
+//            openCanvasWindow("BachGavotteShort.mp3");
+////            new Thread(() -> {
+////                try {
+////                    t.join();
+////                } catch (InterruptedException e) {
+////                    e.printStackTrace();
+////                }
+////
+////                Main.decode(t.image, t.length);
+////
+////            }).start();
 
 
 //                startDrawing("-fx-background-color: red");
 //                System.out.println("213");
-        });
+//        });
     }
 
     //todo тут рисовалка
@@ -149,10 +155,10 @@ public class MainController {
         //todo это не работает, не знаю почему
     }
 
-    void openCanvasWindow(String filePath) {
+    void openCanvasWindow(String filePath, double X, double Y) {
         Group root = new Group();
         Stage stage = new Stage();
-        Canvas canvas = new Canvas(1000, 500);
+        Canvas canvas = new Canvas(canvasSizeX, canvasSizeY);
         root.getChildren().add(canvas);
 
         GraphicsContext gc = canvas.getGraphicsContext2D();
@@ -161,6 +167,10 @@ public class MainController {
         Main.MyThread t = converter.encode(filePath, ga);
 
         stage.setScene(new Scene(root));
+        System.out.println(X);
+        System.out.println(Y);
+        stage.setX(X);
+        stage.setY(Y);
         stage.show();
 
         canvas.addEventHandler(MouseEvent.MOUSE_CLICKED, t1 -> {
