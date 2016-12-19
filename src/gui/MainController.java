@@ -42,8 +42,8 @@ import java.util.List;
 
 public class MainController {
     private Stage primaryStage;
-    public Label statusLabel, labelName_1, labelName_2, labelName_3, labelName_4;
-    public Button runButton, button_1, button_2, button_3, button_4;
+    public Label labelName_1, labelName_2, labelName_3, labelName_4, labelNames[];
+    public Button runButton;
     public ProgressBar progressBar_1, progressBar_2, progressBar_3, progressBar_4, progressBars[];
 
     final int canvasSizeX = 1000, canvasSizeY = 500;
@@ -51,18 +51,15 @@ public class MainController {
     public void initialize(Stage primaryStage) {
         this.primaryStage = primaryStage;
         this.progressBars = new ProgressBar[]{progressBar_1, progressBar_2, progressBar_3, progressBar_4};
+        this.labelNames = new Label[]{labelName_1, labelName_2, labelName_3, labelName_4};
     }
 
     public void startInitialLoading(List<String> songs) {
-        labelName_1.setText(songs.get(0));
-        labelName_2.setText(songs.get(1));
-        labelName_3.setText(songs.get(2));
-        labelName_4.setText(songs.get(3));
 
         Rectangle2D primaryScreenBounds = Screen.getPrimary().getVisualBounds();
         double rightX = primaryScreenBounds.getWidth() - canvasSizeX;
         double rightY = primaryScreenBounds.getHeight() - canvasSizeY;
-        double[][] bounds = { {0, 0}, {rightX, 0}, {0, rightY}, {rightX, rightY} };
+        double[][] bounds = {{0, 0}, {rightX, 0}, {0, rightY}, {rightX, rightY}};
         runButton.setOnAction(new EventHandler<ActionEvent>() {
             @Override
             public void handle(ActionEvent actionEvent) {
@@ -73,6 +70,7 @@ public class MainController {
                     final String currentSong = songs.get(index);
                     String[] bits = currentSong.split("/");
                     final String currentSongName = bits[bits.length - 1];
+                    labelNames[index].setText(currentSongName);
                     final Task task = new Task<ObservableList<String>>() {
                         @Override
                         protected ObservableList<String> call() throws InterruptedException {
@@ -109,7 +107,6 @@ public class MainController {
                         @Override
                         protected void done() {
                             super.done();
-                            System.out.println(currentSong);
 
                             Platform.runLater(() -> {
                                 openCanvasWindow(currentSongName, X, Y);
@@ -117,7 +114,6 @@ public class MainController {
                         }
                     };
 
-                    statusLabel.textProperty().bind(task.messageProperty());
                     runButton.disableProperty().bind(task.runningProperty());
                     progressBar.progressProperty().bind(task.progressProperty());
 
@@ -126,33 +122,6 @@ public class MainController {
                 }
             }
         });
-
-
-//        //todo тут обработчики кнопок, которые прокидывают параметр на startDrawing()
-//
-//        button_1.setOnAction(actionEvent -> {
-//            openCanvasWindow("samples/Help.mp3");
-//            openCanvasWindow("BachGavotteShort.mp3");
-////            new Thread(() -> {
-////                try {
-////                    t.join();
-////                } catch (InterruptedException e) {
-////                    e.printStackTrace();
-////                }
-////
-////                Main.decode(t.image, t.length);
-////
-////            }).start();
-
-
-//                startDrawing("-fx-background-color: red");
-//                System.out.println("213");
-//        });
-    }
-
-    //todo тут рисовалка
-    private void startDrawing(String someArgument) {
-        //todo это не работает, не знаю почему
     }
 
     void openCanvasWindow(String filePath, double X, double Y) {

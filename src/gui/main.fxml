@@ -7,11 +7,10 @@
 <?import javafx.scene.layout.GridPane?>
 <?import javafx.scene.layout.RowConstraints?>
 
-<GridPane alignment="center" hgap="10" minWidth="200.0" prefHeight="336.0" prefWidth="595.0" vgap="10" xmlns="http://javafx.com/javafx/8.0.112" xmlns:fx="http://javafx.com/fxml/1" fx:controller="gui.MainController">
+<GridPane alignment="center" hgap="10" minWidth="200.0" prefHeight="427.0" prefWidth="486.0" vgap="10" xmlns="http://javafx.com/javafx/8.0.111" xmlns:fx="http://javafx.com/fxml/1" fx:controller="gui.MainController">
     <columnConstraints>
       <ColumnConstraints />
       <ColumnConstraints />
-      <ColumnConstraints minWidth="10.0" prefWidth="100.0" />
       <ColumnConstraints />
       <ColumnConstraints />
       <ColumnConstraints maxWidth="0.0" minWidth="0.0" prefWidth="0.0" />
@@ -45,18 +44,13 @@
     </rowConstraints>
    <children>
       <Button fx:id="runButton" mnemonicParsing="false" prefHeight="27.0" prefWidth="115.0" text="Run" GridPane.columnIndex="1" GridPane.rowIndex="1" />
-      <Label fx:id="statusLabel" minWidth="58.0" prefHeight="17.0" prefWidth="209.0" text="Status" GridPane.columnIndex="1" GridPane.rowIndex="2" />
-      <ProgressBar fx:id="progressBar_1" prefHeight="23.0" prefWidth="407.0" progress="0.0" GridPane.columnIndex="1" GridPane.rowIndex="4" />
-       <ProgressBar fx:id="progressBar_2" prefHeight="23.0" prefWidth="407.0" progress="0.0" GridPane.columnIndex="1" GridPane.rowIndex="6" />
-       <ProgressBar fx:id="progressBar_3" prefHeight="23.0" prefWidth="407.0" progress="0.0" GridPane.columnIndex="1" GridPane.rowIndex="8" />
-       <ProgressBar fx:id="progressBar_4" prefHeight="23.0" prefWidth="407.0" progress="0.0" GridPane.columnIndex="1" GridPane.rowIndex="10" />
-      <Label fx:id="labelName_1" GridPane.columnIndex="1" GridPane.columnSpan="2" GridPane.rowIndex="3" />
-      <Label fx:id="labelName_2" GridPane.columnIndex="1" GridPane.columnSpan="2" GridPane.rowIndex="5" />
-      <Label fx:id="labelName_3" GridPane.columnIndex="1" GridPane.columnSpan="2" GridPane.rowIndex="7" />
-      <Label fx:id="labelName_4" GridPane.columnIndex="1" GridPane.columnSpan="2" GridPane.rowIndex="9" />
-      <Button fx:id="button_1" mnemonicParsing="false" prefWidth="115.0" text="Draw" GridPane.columnIndex="2" GridPane.rowIndex="4" />
-      <Button fx:id="button_2" mnemonicParsing="false" prefWidth="115.0" text="Draw" GridPane.columnIndex="2" GridPane.rowIndex="6" />
-      <Button fx:id="button_3" mnemonicParsing="false" prefWidth="115.0" text="Draw" GridPane.columnIndex="2" GridPane.rowIndex="8" />
-      <Button fx:id="button_4" mnemonicParsing="false" prefWidth="115.0" text="Draw" GridPane.columnIndex="2" GridPane.rowIndex="10" />
+      <ProgressBar fx:id="progressBar_1" prefHeight="23.0" prefWidth="407.0" progress="0.0" GridPane.columnIndex="1" GridPane.rowIndex="3" />
+       <ProgressBar fx:id="progressBar_2" prefHeight="23.0" prefWidth="407.0" progress="0.0" GridPane.columnIndex="1" GridPane.rowIndex="5" />
+       <ProgressBar fx:id="progressBar_3" prefHeight="23.0" prefWidth="407.0" progress="0.0" GridPane.columnIndex="1" GridPane.rowIndex="7" />
+       <ProgressBar fx:id="progressBar_4" prefHeight="23.0" prefWidth="407.0" progress="0.0" GridPane.columnIndex="1" GridPane.rowIndex="9" />
+      <Label fx:id="labelName_1" GridPane.columnIndex="1" GridPane.columnSpan="2" GridPane.rowIndex="2" />
+      <Label fx:id="labelName_2" GridPane.columnIndex="1" GridPane.columnSpan="2" GridPane.rowIndex="4" />
+      <Label fx:id="labelName_3" GridPane.columnIndex="1" GridPane.columnSpan="2" GridPane.rowIndex="6" />
+      <Label fx:id="labelName_4" GridPane.columnIndex="1" GridPane.columnSpan="2" GridPane.rowIndex="8" />
    </children>
 </GridPane>
