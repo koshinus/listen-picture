@@ -72,10 +72,12 @@ public class Converter {
         final Worker w = new Worker();
         final File file = new File(audioPath);
 
-        BufferedImage bufferedImage = new BufferedImage(2000, 500, BufferedImage.TYPE_INT_RGB);
-        Graphics imageG = bufferedImage.getGraphics();
 
         try (final AudioInputStream in = getAudioInputStream(file)) {
+            int width = (int)file.length() / FRAME_LENGTH + 10;
+            BufferedImage bufferedImage = new BufferedImage(width, 500, BufferedImage.TYPE_INT_RGB);
+            Graphics imageG = bufferedImage.getGraphics();
+
             int columns = 0;
             int nSum = 0;
 

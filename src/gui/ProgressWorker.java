@@ -5,6 +5,7 @@ import com.listen_picture.Main;
 import javafx.scene.control.Label;
 import javafx.scene.control.ProgressBar;
 
+import java.util.Collections;
 import java.util.List;
 import java.util.concurrent.*;
 
@@ -17,11 +18,27 @@ public class ProgressWorker extends Thread {
     private ProgressBar[] progressBars;
     private Label[] labels;
     private double[][] canvasSizes;
-    private boolean[] progressFree = { true, true, true, true };
-    private int lastUsedIndex;
-    private Semaphore mutex = new Semaphore(1, true);
+    ArrayWrapper progressFree = new ArrayWrapper();
+//    private int lastUsedIndex;
+//    private Semaphore mutex = new Semaphore(1, true);
 
-    public ProgressWorker(ProgressBar[] progressBars, Label[] labels, double[][] canvasSizes, List<String> urls){
+    class ArrayWrapper {
+        private boolean[] array = new boolean[]{true, true, true, true};
+
+        public void setValue(int index, boolean value) {
+            synchronized (array) {
+                array[index] = value;
+            }
+        }
+
+        public boolean getValue(int index) {
+            synchronized (array) {
+                return array[index];
+            }
+        }
+    }
+
+    public ProgressWorker(ProgressBar[] progressBars, Label[] labels, double[][] canvasSizes, List<String> urls) {
         this.executor = Executors.newFixedThreadPool(4);
         this.progressBars = progressBars;
         this.labels = labels;
@@ -33,60 +50,37 @@ public class ProgressWorker extends Thread {
     }
 
     public void run() {
-        while( true ) {
-            if (urlsQueue.isEmpty()){
-                try {
-                    Thread.sleep(500);
-                } catch (InterruptedException e) {
-                    Thread.currentThread().interrupt();
-                    return;
-                }
+        while (true) {
+            if (urlsQueue.isEmpty()) {
+                executor.shutdown();
+                System.out.println("DONE");
+                return;
             } else {
-                System.out.println("before loop");
-                boolean f = true;
-                while (f) {
-                    try {
-                        mutex.acquire();
-                        System.out.println("mutex captured");
+                if (progressFree.getValue(0) || progressFree.getValue(1) || progressFree.getValue(2) || progressFree.getValue(3)) {
 
-                        if (progressFree[0] || progressFree[1] || progressFree[2] || progressFree[3]) {
-                            f = false;
-                            int i = 0;
-                            while (!progressFree[i]) {
-                                i++;
-                            }
-                            System.out.println(i);
-                            progressFree[i] = false;
-                            lastUsedIndex = i;
-                            final int capturedIndex = i;
-                            final String current = urlsQueue.poll();
-                            System.out.println(current);
-                            executor.execute(new ProgressTask(progressBars[i], labels[i], canvasSizes[i][0], canvasSizes[i][1], current, new Callable<Integer>() {
-                                public Integer call() {
-                                    try {
-                                        mutex.acquire();
-                                        System.out.println("mutex captured");
-                                        progressFree[capturedIndex] = true;
-                                        System.out.println("mutex released");
-                                        mutex.release();
-                                    } catch (InterruptedException e) {
-                                        Thread.currentThread().interrupt();
-                                        return -1;
-                                    }
-                                    return lastUsedIndex;
-                                }
-                            }));
-                        } else {
-                            Thread.sleep(500);
-                        }
-                        System.out.println("mutex released");
-                        mutex.release();
+                    int i = 0;
+                    while (!progressFree.getValue(i)) {
+                        i++;
+                    }
+
+                    final int capturedIndex = i;
+                    progressFree.setValue(capturedIndex, false);
+
+                    final String current = urlsQueue.poll();
+                    System.out.println(current);
+                    executor.execute(new ProgressTask(progressBars[i], labels[i], canvasSizes[i][0], canvasSizes[i][1], current, () -> {
+                        progressFree.setValue(capturedIndex, true);
+                        return 1;
+                    }));
+                } else {
+                    try {
+                        Thread.sleep(500);
                     } catch (InterruptedException e) {
-                        Thread.currentThread().interrupt();
-                        return;
+                        e.printStackTrace();
                     }
                 }
             }
         }
+//        this.executor.shutdown();
     }
 }

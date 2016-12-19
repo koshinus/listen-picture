@@ -63,64 +63,6 @@ public class MainController {
             @Override
             public void handle(ActionEvent actionEvent) {
                 final ProgressWorker w = new ProgressWorker(progressBars, labelNames, bounds, songs);
-                w.run();
-//                int index = 0;
-//                for (ProgressBar progressBar : progressBars) {
-//                    final double X = bounds[index][0];
-//                    final double Y = bounds[index][1];
-//                    final String currentSong = songs.get(index);
-//                    String[] bits = currentSong.split("/");
-//                    final String currentSongName = bits[bits.length - 1];
-//                    labelNames[index].setText(currentSongName);
-//                    final Task task = new Task<ObservableList<String>>() {
-//                        @Override
-//                        protected ObservableList<String> call() throws InterruptedException {
-//                            BufferedInputStream in = null;
-//                            FileOutputStream out = null;
-//                            try {
-//                                URL url = new URL(currentSong);
-//                                URLConnection conn = url.openConnection();
-//                                int size = conn.getContentLength();
-//
-//                                if (size < 0) {
-//                                    throw new RuntimeException("Size of file undefined");
-//                                }
-//
-//                                in = new BufferedInputStream(url.openStream());
-//                                out = new FileOutputStream(currentSongName);
-//                                byte data[] = new byte[1024];
-//                                int count;
-//                                double sumCount = 0.0;
-//
-//                                while ((count = in.read(data, 0, 1024)) != -1) {
-//                                    out.write(data, 0, count);
-//                                    sumCount += count;
-//                                    updateProgress((int) ((sumCount / size) * 100), 100);
-//                                }
-//                            } catch (Exception e) {
-//                                System.out.println(e.fillInStackTrace());
-//                                throw new RuntimeException(e);
-//                            }
-//                            return FXCollections.observableArrayList(songs);
-//                        }
-//
-//
-//                        @Override
-//                        protected void done() {
-//                            super.done();
-//
-//                            Platform.runLater(() -> {
-//                                openCanvasWindow(currentSongName, X, Y);
-//                            });
-//                        }
-//                    };
-//
-//                    runButton.disableProperty().bind(task.runningProperty());
-//                    progressBar.progressProperty().bind(task.progressProperty());
-//
-//                    new Thread(task).start();
-//                    index++;
-//                }
             }
         });
     }
