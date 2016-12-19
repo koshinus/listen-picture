@@ -25,9 +25,7 @@ public class MainController {
     private Stage primaryStage;
     public Label statusLabel, labelName_1, labelName_2, labelName_3, labelName_4;
     public Button runButton, button_1, button_2, button_3, button_4;
-    public ListView<String> peopleView;
     public ProgressBar progressBar_1, progressBar_2, progressBar_3, progressBar_4, progressBars[];
-    public Canvas canvas;
 
     public void initialize(Stage primaryStage) {
         this.primaryStage = primaryStage;
@@ -35,11 +33,6 @@ public class MainController {
     }
 
     public void startInitialLoading(List<String> songs) {
-        progressBar_1.prefWidthProperty().bind(peopleView.prefWidthProperty());
-        progressBar_2.prefWidthProperty().bind(peopleView.prefWidthProperty());
-        progressBar_3.prefWidthProperty().bind(peopleView.prefWidthProperty());
-        progressBar_4.prefWidthProperty().bind(peopleView.prefWidthProperty());
-
         labelName_1.setText(songs.get(0));
         labelName_2.setText(songs.get(1));
         labelName_3.setText(songs.get(2));
@@ -60,8 +53,7 @@ public class MainController {
                             try {
                                 URL url = new URL(currentSong);
                                 URLConnection conn = url.openConnection();
-//                                int size = conn.getContentLength();
-                                int size = (int)1e6;
+                                int size = conn.getContentLength();
 
                                 if (size < 0) {
                                     throw new RuntimeException("Size of file undefined");
@@ -96,7 +88,6 @@ public class MainController {
 
                     statusLabel.textProperty().bind(task.messageProperty());
                     runButton.disableProperty().bind(task.runningProperty());
-                    peopleView.itemsProperty().bind(task.valueProperty());
                     progressBar.progressProperty().bind(task.progressProperty());
                     task.stateProperty().addListener(new ChangeListener<Worker.State>() {
                         @Override
@@ -109,8 +100,8 @@ public class MainController {
                     });
 
                     new Thread(task).start();
+                    index++;
                 }
-                index++;
             }
         });
 
@@ -149,6 +140,5 @@ public class MainController {
     //todo тут рисовалка
     private void startDrawing(String someArgument) {
         //todo это не работает, не знаю почему
-        canvas.setStyle(someArgument);
     }
 }
