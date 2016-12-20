@@ -121,7 +121,7 @@ public class Main {
     public static class MyThread extends Thread {
         public int length;
         public BufferedImage image;
-        public boolean runned = false;
+        public Thread playingThread;
 
         public MyThread(Runnable target){
             super(target);

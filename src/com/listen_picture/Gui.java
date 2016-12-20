@@ -41,7 +41,9 @@ public class Gui extends Application {
                     "http://www.hubharp.com/web_sound/BachGavotteShort.mp3",
                     "https://promakh.ru/www/yellow-submarine/02_Only_A_Northern_Song.mp3",
                     "https://promakh.ru/www/yellow-submarine/03_All_Together_Now.mp3",
-                    "https://promakh.ru/www/yellow-submarine/04_Hey_Bulldog.mp3"
+                    "https://promakh.ru/www/yellow-submarine/04_Hey_Bulldog.mp3",
+                    "http://www.hubharp.com/web_sound/BachGavotteShort.mp3",
+                    "https://promakh.ru/www/yellow-submarine/02_Only_A_Northern_Song.mp3"
             };
 
             ArrayList<String> ar = new ArrayList<>(Arrays.asList(urls));

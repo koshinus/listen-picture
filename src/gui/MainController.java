@@ -79,20 +79,25 @@ public class MainController {
         Main.MyThread t = converter.encode(filePath, ga);
 
         stage.setScene(new Scene(root));
-        System.out.println(X);
-        System.out.println(Y);
         stage.setX(X);
         stage.setY(Y);
         stage.show();
 
         canvas.addEventHandler(MouseEvent.MOUSE_CLICKED, t1 -> {
-            try {
-                t.join();
-            } catch (InterruptedException e) {
-                e.printStackTrace();
+            if (t.playingThread != null) {
+                t.playingThread.stop();
+                t.playingThread = null;
+            } else {
+                t.playingThread = new Thread(() -> {
+                    try {
+                        t.join();
+                    } catch (InterruptedException e) {
+                        e.printStackTrace();
+                    }
+                    Main.decode(t.image, t.length);
+                });
+                t.playingThread.start();
             }
-            Main.decode(t.image, t.length);
-            t.runned = true;
         });
     }
 }
