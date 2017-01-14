@@ -19,8 +19,10 @@ public class ProgressWorker extends Thread {
     private Label[] labels;
     private double[][] canvasSizes;
     ArrayWrapper progressFree = new ArrayWrapper();
-//    private int lastUsedIndex;
-//    private Semaphore mutex = new Semaphore(1, true);
+    private Callable onDone;
+
+    private int urlsCount = 0;
+    private int urlsDoneCount = 0;
 
     class ArrayWrapper {
         private boolean[] array = new boolean[]{true, true, true, true};
@@ -38,11 +40,14 @@ public class ProgressWorker extends Thread {
         }
     }
 
-    public ProgressWorker(ProgressBar[] progressBars, Label[] labels, double[][] canvasSizes, List<String> urls) {
+    public ProgressWorker(ProgressBar[] progressBars, Label[] labels, double[][] canvasSizes, List<String> urls, Callable onDone) {
         this.executor = Executors.newFixedThreadPool(4);
         this.progressBars = progressBars;
         this.labels = labels;
         this.canvasSizes = canvasSizes;
+        this.onDone = onDone;
+
+        this.urlsCount = urls.size();
         for (String url : urls) {
             urlsQueue.add(url);
         }
@@ -70,6 +75,8 @@ public class ProgressWorker extends Thread {
                     System.out.println(current);
                     executor.execute(new ProgressTask(progressBars[i], labels[i], canvasSizes[i][0], canvasSizes[i][1], current, () -> {
                         progressFree.setValue(capturedIndex, true);
+                        urlsDoneCount += 1;
+                        checkDone();
                         return 1;
                     }));
                 } else {
@@ -81,6 +88,15 @@ public class ProgressWorker extends Thread {
                 }
             }
         }
-//        this.executor.shutdown();
+    }
+
+    private void checkDone(){
+        if (urlsDoneCount == urlsCount){
+            try {
+                onDone.call();
+            } catch (Exception e) {
+                e.printStackTrace();
+            }
+        }
     }
 }

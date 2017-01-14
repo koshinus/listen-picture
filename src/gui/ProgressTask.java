@@ -1,21 +1,14 @@
 package gui;
 
-import com.listen_picture.Main;
 import javafx.application.Platform;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
 import javafx.concurrent.Task;
-import javafx.event.ActionEvent;
-import javafx.event.EventHandler;
-import javafx.geometry.Rectangle2D;
 import javafx.scene.control.*;
 import javafx.scene.control.Label;
-import javafx.stage.Screen;
 
-import java.awt.*;
 import java.io.BufferedInputStream;
 import java.io.FileOutputStream;
-import java.net.InterfaceAddress;
 import java.net.URL;
 import java.net.URLConnection;
 import java.util.concurrent.Callable;
@@ -28,15 +21,15 @@ public class ProgressTask implements Runnable {
     Label label;
     double canvasX, canvasY;
     String url;
-    Callable<Integer> func;
+    Callable<Integer> onDone;
 
-    public ProgressTask(ProgressBar progressBar, Label label, double canvasX, double canvasY, String url, Callable<Integer> func) {
+    public ProgressTask(ProgressBar progressBar, Label label, double canvasX, double canvasY, String url, Callable<Integer> onDone) {
         this.progressBar = progressBar;
         this.label = label;
         this.canvasX = canvasX;
         this.canvasY = canvasY;
         this.url = url;
-        this.func = func;
+        this.onDone = onDone;
     }
 
     public void run() {
@@ -84,13 +77,13 @@ public class ProgressTask implements Runnable {
             protected void done() {
                 super.done();
                 try {
-                    func.call();
+                    onDone.call();
                 } catch (Exception e) {
                     throw new RuntimeException(e);
                 }
-                Platform.runLater(() -> {
-                    MainController.openCanvasWindow(currentSongName, canvasX, canvasY);
-                });
+//                Platform.runLater(() -> {
+//                    MainController.openCanvasWindow(currentSongName, canvasX, canvasY);
+//                });
             }
         };
 

@@ -1,43 +1,20 @@
 package gui;
 
-import com.listen_picture.Converter;
-import com.listen_picture.Main;
-import com.sun.codemodel.internal.JLabel;
+import com.listen_picture.Gui;
+
 import javafx.application.Platform;
-import javafx.beans.value.ChangeListener;
-import javafx.beans.value.ObservableValue;
-import javafx.collections.FXCollections;
-import javafx.collections.ObservableList;
-import javafx.concurrent.Task;
-import javafx.concurrent.Worker;
-import javafx.embed.swing.SwingFXUtils;
-import javafx.embed.swing.SwingNode;
-import javafx.event.ActionEvent;
-import javafx.event.EventHandler;
-import javafx.scene.Group;
+import javafx.fxml.FXMLLoader;
+import javafx.scene.Parent;
 import javafx.scene.Scene;
-import javafx.scene.canvas.GraphicsContext;
 import javafx.scene.control.Button;
 import javafx.scene.control.Label;
-import javafx.scene.control.ListView;
 import javafx.scene.control.ProgressBar;
-import javafx.scene.image.WritableImage;
-import javafx.scene.input.MouseEvent;
 import javafx.stage.Stage;
 
-import javafx.scene.canvas.Canvas;
 import javafx.geometry.Rectangle2D;
 import javafx.stage.Screen;
 
-import javax.imageio.ImageIO;
-import java.awt.*;
-import java.awt.image.BufferedImage;
-import java.io.BufferedInputStream;
-import java.io.File;
-import java.io.FileOutputStream;
 import java.io.IOException;
-import java.net.URL;
-import java.net.URLConnection;
 import java.util.List;
 
 public class MainController {
@@ -59,45 +36,30 @@ public class MainController {
         double rightX = primaryScreenBounds.getWidth() - canvasSizeX;
         double rightY = primaryScreenBounds.getHeight() - canvasSizeY;
         double[][] bounds = {{0, 0}, {rightX, 0}, {0, rightY}, {rightX, rightY}};
-        runButton.setOnAction(new EventHandler<ActionEvent>() {
-            @Override
-            public void handle(ActionEvent actionEvent) {
-                final ProgressWorker w = new ProgressWorker(progressBars, labelNames, bounds, songs);
-            }
+        runButton.setOnAction(actionEvent -> {
+            new ProgressWorker(progressBars, labelNames, bounds, songs, () -> {
+                Platform.runLater(() -> {
+                    openListController(songs);
+                });
+                return null;
+            });
         });
     }
 
-    static void openCanvasWindow(String filePath, double X, double Y) {
-        Group root = new Group();
-        Stage stage = new Stage();
-        Canvas canvas = new Canvas(canvasSizeX, canvasSizeY);
-        root.getChildren().add(canvas);
+    void openListController(List<String> songs){
+        FXMLLoader fxmlLoader = new FXMLLoader(Gui.class.getResource("/gui/list.fxml"));
 
-        GraphicsContext gc = canvas.getGraphicsContext2D();
-        GraphicsAdapter ga = new GraphicsAdapter(gc);
-        final Converter converter = new Converter();
-        Main.MyThread t = converter.encode(filePath, ga);
+        Parent root = null;
+        try {
+            root = fxmlLoader.load();
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
 
-        stage.setScene(new Scene(root));
-        stage.setX(X);
-        stage.setY(Y);
-        stage.show();
+        ListController controller = fxmlLoader.getController();
+        controller.initialize(primaryStage, songs);
 
-        canvas.addEventHandler(MouseEvent.MOUSE_CLICKED, t1 -> {
-            if (t.playingThread != null) {
-                t.playingThread.stop();
-                t.playingThread = null;
-            } else {
-                t.playingThread = new Thread(() -> {
-                    try {
-                        t.join();
-                    } catch (InterruptedException e) {
-                        e.printStackTrace();
-                    }
-                    Main.decode(t.image, t.length);
-                });
-                t.playingThread.start();
-            }
-        });
+        primaryStage.setScene(new Scene(root));
+        primaryStage.show();
     }
 }

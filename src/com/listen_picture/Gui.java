@@ -30,20 +30,24 @@ public class Gui extends Application {
 
         try {
             FXMLLoader fxmlLoader = new FXMLLoader(getClass().getResource("/gui/main.fxml"));
-            Parent root = (Parent) fxmlLoader.load();
-            MainController controller = fxmlLoader.<MainController>getController();
+            Parent root = fxmlLoader.load();
+            MainController controller = fxmlLoader.getController();
             controller.initialize(primaryStage);
 
             primaryStage.setScene(new Scene(root));
             primaryStage.show();
 
             String[] urls = {
-                    "http://www.hubharp.com/web_sound/BachGavotteShort.mp3",
+                    "http://mp3.promakh.ru/www/yellow-submarine/01_Yellow_Submarine.mp3",
                     "http://mp3.promakh.ru/www/yellow-submarine/02_Only_A_Northern_Song.mp3",
-                    "http://mp3.promakh.ru/www/yellow-submarine/03_All_Together_Now.mp3",
-                    "http://mp3.promakh.ru/www/yellow-submarine/04_Hey_Bulldog.mp3",
+//                    "http://mp3.promakh.ru/www/yellow-submarine/03_All_Together_Now.mp3",
+//                    "http://mp3.promakh.ru/www/yellow-submarine/04_Hey_Bulldog.mp3",
+//                    "http://mp3.promakh.ru/www/yellow-submarine/05 - It's All To Much.mp3",
+//                    "http://mp3.promakh.ru/www/yellow-submarine/06 - All You Need Is Love.mp3",
+//                    "http://mp3.promakh.ru/www/yellow-submarine/07 - Pepperland.mp3",
+//                    "http://mp3.promakh.ru/www/yellow-submarine/08 - Sea of Time.mp3",
+//                    "http://mp3.promakh.ru/www/yellow-submarine/09 - Sea of Holes.mp3",
 //                    "http://www.hubharp.com/web_sound/BachGavotteShort.mp3",
-//                    "http://mp3.promakh.ru/www/yellow-submarine/02_Only_A_Northern_Song.mp3"
             };
 
             ArrayList<String> ar = new ArrayList<>(Arrays.asList(urls));
