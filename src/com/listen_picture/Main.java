@@ -129,20 +129,7 @@ public class Main {
     }
 
 
-    // проигрывание картинки, сгенерированной с помощью функции encode
-//    public static void decode(String path) throws IOException {
     public static void decode(BufferedImage image, int length) {
-//        final File file = new File(path);
-//        String[] split = path.split("\\.", -1);
-//        int length = Integer.parseInt(split[split.length - 2]);
-
-//        BufferedImage image = null;
-//        try {
-//            image = ImageIO.read(file);
-//        } catch (IOException e) {
-//            e.printStackTrace();
-//        }
-
         ByteArrayOutputStream baos = new ByteArrayOutputStream();
         byte[] bytes1 = baos.toByteArray();
         System.out.println(bytes1.length);

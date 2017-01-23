@@ -72,7 +72,6 @@ public class Converter {
         final Worker w = new Worker();
         final File file = new File(audioPath);
 
-
         try (final AudioInputStream in = getAudioInputStream(file)) {
             int width = (int)file.length() / FRAME_LENGTH + 10;
             BufferedImage bufferedImage = new BufferedImage(width, 500, BufferedImage.TYPE_INT_RGB);
@@ -124,9 +123,6 @@ public class Converter {
             t.start();
 
             return t;
-
-//            ImageIO.write(bufferedImage, "png", new File("saved." + nSum + ".png"));
-
         } catch (UnsupportedAudioFileException | IOException e) {
             throw new IllegalStateException(e);
         }
