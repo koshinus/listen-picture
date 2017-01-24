@@ -131,8 +131,6 @@ public class Main {
 
     public static void decode(BufferedImage image, int length) {
         ByteArrayOutputStream baos = new ByteArrayOutputStream();
-        byte[] bytes1 = baos.toByteArray();
-        System.out.println(bytes1.length);
 
         int readLength = 0;
         try {
