@@ -146,32 +146,22 @@ public class Main {
         ByteArrayOutputStream baos = new ByteArrayOutputStream();
         byte[] bytes1 = baos.toByteArray();
         System.out.println(bytes1.length);
+        System.out.println("before decoding");
 
         int readLength = 0;
         try {
             for (int x = 0; x < image.getWidth(); ++x) {
                 for (int y = 0; y < image.getHeight(); ++y) {
-                    Color color = new Color(image.getRGB(x, y));
-                    readLength += 3;
+//                    Color color = new Color();
+                    int color = image.getRGB(x, y);
+                    readLength += 1;
                     if (readLength <= length) {
-                        baos.write(new byte[]{
-                                (byte) (color.getRed() - Converter.byteShift),
-                                (byte) (color.getGreen() - Converter.byteShift),
-                                (byte) (color.getBlue() - Converter.byteShift)
-                        });
-                    } else if (readLength - 1 == length) {
-                        baos.write(new byte[]{
-                                (byte) (color.getRed() - Converter.byteShift),
-                                (byte) (color.getGreen() - Converter.byteShift),
-                        });
-                        break;
-                    } else if (readLength - 2 == length) {
-                        baos.write(new byte[]{
-                                (byte) (color.getRed() - Converter.byteShift),
-                        });
-                        break;
-                    } else {
-                        break;
+                        int current =
+                                (((color >> 16) & 0xFF) & 0b1111) +
+                                (((color >> 8) & 0xFF) & 0b11) * 0b10000 +
+                                (((color >> 0) & 0xFF) & 0b11) * 0b1000000;
+                        int toByte = (current % 256) - Converter.byteShift;
+                        baos.write(new byte[]{(byte)toByte});
                     }
                 }
                 if (readLength > length) break;
@@ -188,7 +178,7 @@ public class Main {
         try {
             audioInputStream = getAudioInputStream(decodedInputStream);
         } catch (UnsupportedAudioFileException | IOException e) {
-            e.printStackTrace();
+            throw new RuntimeException(e);
         }
 
         AudioFilePlayer player = new AudioFilePlayer();
@@ -199,4 +189,5 @@ public class Main {
             e.printStackTrace();
         }
     }
+
 }

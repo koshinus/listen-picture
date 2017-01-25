@@ -18,8 +18,13 @@ public class Converter {
     private ConcurrentLinkedQueue<Main.QueueItem<Color[]>> colorsQueue = new ConcurrentLinkedQueue<>();
 
     static public final int byteShift = 128;
-    static int FRAME_LENGTH = 1500;
+    static int FRAME_LENGTH = 500;
     static Random rand = new Random();
+    static BufferedImage basement;
+
+    private int transformColor(int value, double degree) {
+        return (int)(Math.pow(value / 256.0, 1 / degree) * 256.0);
+    }
 
     public class MyTask implements Runnable {
         Main.QueueItem<byte[]> item;
@@ -28,16 +33,38 @@ public class Converter {
         }
 
         public void run() {
+            if (basement == null)
+                try {
+                    basement = javax.imageio.ImageIO.read(new File("music.jpg"));
+                } catch (Exception e) {
+                    throw new RuntimeException(e);
+                }
+
             byte[] bytes = item.items;
-            Color[] result = new Color[FRAME_LENGTH / 3];
-            for (int i = 0; i < FRAME_LENGTH; i += 3) {
-                result[i / 3] = new Color(bytes[i] + byteShift, bytes[i + 1] + byteShift, bytes[i + 2] + byteShift);
+            Color[] result = new Color[FRAME_LENGTH];
+            for (int i = 0; i < FRAME_LENGTH; i += 1) {
+                Color color = new Color(basement.getRGB(item.order % basement.getWidth(), i));
+                int red = color.getRed();
+                int blue = color.getBlue();
+                int green = color.getGreen();
+
+                red = transformColor(red, 1.2);
+                blue = transformColor(blue, 1.2);
+                green = transformColor(green, 1.2);
+
+                int current = bytes[i] + byteShift;
+
+                red &= ~0b1111;
+                red |= (current & 0b1111);
+
+                green &= ~0b11;
+                green |= ((current / 0b10000) & 0b11);
+
+                blue &= ~0b11;
+                blue |= ((current / 0b1000000) & 0b11);
+
+                result[i] = new Color(red, green, blue);
             }
-//            try {
-//                Thread.sleep(rand.nextInt(150) + 1);
-//            } catch (InterruptedException e) {
-//                e.printStackTrace();
-//            }
             colorsQueue.add(new Main.QueueItem<>(item.order, result));
         }
     }
@@ -66,8 +93,6 @@ public class Converter {
         }
     }
 
-
-
     public Main.MyThread encode(String audioPath, Graphics graphics) {
         final Worker w = new Worker();
         final File file = new File(audioPath);
@@ -94,6 +119,7 @@ public class Converter {
 
             Main.MyThread t;
             t = new Main.MyThread(() -> {
+
                 int columnsDrawed = 0;
                 while( columnsDrawed != cl ) {
                     if (colorsQueue.isEmpty()){
@@ -106,9 +132,10 @@ public class Converter {
                     } else {
                         Main.QueueItem<Color[]> item = colorsQueue.poll();
                         int x = item.order;
-                        for (int y = 0; y < 500; y+=1){
-                            graphics.setColor(item.items[y]);
-                            imageG.setColor(item.items[y]);
+                        for (int y = 0; y < 500; y += 1){
+                            Color color = item.items[y];
+                            graphics.setColor(color);
+                            imageG.setColor(color);
 
                             graphics.drawLine(x, y, x, y);
                             imageG.drawLine(x, y, x, y);
