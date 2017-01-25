@@ -1,0 +1,9 @@
+<component name="libraryTable">
+  <library name="lastfm-java">
+    <CLASSES>
+      <root url="jar://$PROJECT_DIR$/../../last.fm API/out/artifacts/lastfm_java_jar/lastfm-java.jar!/" />
+    </CLASSES>
+    <JAVADOC />
+    <SOURCES />
+  </library>
+</component>

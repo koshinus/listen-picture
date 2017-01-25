@@ -57,8 +57,6 @@ public class ProgressWorker extends Thread {
     public void run() {
         while (true) {
             if (urlsQueue.isEmpty()) {
-                executor.shutdown();
-                System.out.println("DONE");
                 return;
             } else {
                 if (progressFree.getValue(0) || progressFree.getValue(1) || progressFree.getValue(2) || progressFree.getValue(3)) {
@@ -93,6 +91,8 @@ public class ProgressWorker extends Thread {
     private void checkDone(){
         if (urlsDoneCount == urlsCount){
             try {
+                executor.shutdown();
+                System.out.println("Download done");
                 onDone.call();
             } catch (Exception e) {
                 e.printStackTrace();

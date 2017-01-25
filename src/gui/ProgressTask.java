@@ -82,7 +82,7 @@ public class ProgressTask implements Runnable {
                     throw new RuntimeException(e);
                 }
 //                Platform.runLater(() -> {
-//                    MainController.openCanvasWindow(currentSongName, canvasX, canvasY);
+//                    MainController.openCanvasWindowFromMp3(currentSongName, canvasX, canvasY);
 //                });
             }
         };

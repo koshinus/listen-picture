@@ -96,10 +96,9 @@ public class Converter {
     public Main.MyThread encode(String audioPath, Graphics graphics) {
         final Worker w = new Worker();
         final File file = new File(audioPath);
-
+        int width = (int)file.length() / FRAME_LENGTH + 10;
 
         try (final AudioInputStream in = getAudioInputStream(file)) {
-            int width = (int)file.length() / FRAME_LENGTH + 10;
             BufferedImage bufferedImage = new BufferedImage(width, 500, BufferedImage.TYPE_INT_RGB);
             Graphics imageG = bufferedImage.getGraphics();
 
@@ -125,7 +124,6 @@ public class Converter {
                     if (colorsQueue.isEmpty()){
                         try {
                             Thread.sleep(500);
-                            System.out.println("wait2 " + columnsDrawed + "/" + cl);
                         } catch (InterruptedException e) {
                             Thread.currentThread().interrupt();
                         }
@@ -141,8 +139,12 @@ public class Converter {
                             imageG.drawLine(x, y, x, y);
                         }
                         columnsDrawed += 1;
+                        if (columnsDrawed % 50 == 0) {
+                            System.out.println("Drawing " + audioPath + " : " + columnsDrawed * 100 / cl + "%    ");
+                        }
                     }
                 }
+                System.out.println("Drawing " + audioPath + " : done");
                 w.interrupt();
             });
 
@@ -151,9 +153,6 @@ public class Converter {
             t.start();
 
             return t;
-
-//            ImageIO.write(bufferedImage, "png", new File("saved." + nSum + ".png"));
-
         } catch (UnsupportedAudioFileException | IOException e) {
             throw new IllegalStateException(e);
         }
